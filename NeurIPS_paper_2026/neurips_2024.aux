@@ -1,0 +1,119 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{park2023generative,wang2023voyager}
+\citation{duan2024gtbench}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{1}{Introduction}{section.1}{}}
+\citation{brookman2023playing,fan2024can}
+\citation{wei2022chain}
+\citation{ouyang2022training}
+\citation{perez2022red}
+\citation{kirkpatrick2017overcoming}
+\citation{turner2023activation,zou2023representation,rimsky2023steering}
+\citation{qwen2025qwen25}
+\citation{rimsky2023steering}
+\citation{zou2023representation}
+\citation{brookman2023playing}
+\citation{fan2024can}
+\citation{duan2024gtbench}
+\citation{turner2023activation}
+\citation{zou2023representation}
+\citation{rimsky2023steering}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{2}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Game Theory and LLM Evaluation.}{2}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Activation Engineering and Representation Control.}{2}{section*.3}\protected@file@percent }
+\citation{olah2020zoom,elhage2022toy}
+\citation{li2024inference}
+\citation{azaria2023internal}
+\citation{perez2022red,wei2024jailbroken}
+\citation{qwen2025qwen25}
+\@writefile{toc}{\contentsline {paragraph}{Mechanistic Interpretability of Strategic Behavior.}{3}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{AI Safety and Adversarial Robustness.}{3}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{3}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{3}{Methodology}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Model and Computational Setup}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Game Environments}{3}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:games}{{3.2}{3}{Game Environments}{subsection.3.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Payoff matrices for the three game environments (row player's payoff shown).}}{3}{table.caption.6}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:payoffs}{{1}{3}{Payoff matrices for the three game environments (row player's payoff shown)}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Extracting the Steering Vector}{3}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:sv_extraction}{{3.3}{3}{Extracting the Steering Vector}{subsection.3.3}{}}
+\newlabel{eq:sv}{{1}{3}{Extracting the Steering Vector}{equation.3.1}{}}
+\citation{rimsky2023steering}
+\citation{zou2023representation}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Inference-time Cooperative Steering}}{4}{algorithm.1}\protected@file@percent }
+\newlabel{alg:steering}{{1}{4}{Inference-time Cooperative Steering}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Comparison Methods}{4}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:methods}{{3.4}{4}{Comparison Methods}{subsection.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Adversarial Robustness Protocol}{4}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:adv_protocol}{{3.5}{4}{Adversarial Robustness Protocol}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments and Results}{4}{section.4}\protected@file@percent }
+\newlabel{sec:exp}{{4}{4}{Experiments and Results}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}The Geometry of Strategic Intent}{4}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:exp_geometry}{{4.1}{4}{The Geometry of Strategic Intent}{subsection.4.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector.}}{5}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:latent_space}{{1}{5}{Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector}{figure.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Layer-wise Localization of Strategic Intent}{5}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:exp_localization}{{4.2}{5}{Layer-wise Localization of Strategic Intent}{subsection.4.2}{}}
+\newlabel{eq:fisher}{{2}{5}{Layer-wise Localization of Strategic Intent}{equation.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Zero-shot Cross-Game Generalization}{5}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:exp_generalization}{{4.3}{5}{Zero-shot Cross-Game Generalization}{subsection.4.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers.}}{6}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:layer_localization}{{2}{6}{Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers}{figure.caption.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cross-game generalization results: Mean cooperation rate (\%) $\pm $ std across 5 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair.}}{6}{table.caption.9}\protected@file@percent }
+\newlabel{tab:cross_game}{{2}{6}{Cross-game generalization results: Mean cooperation rate (\%) $\pm $ std across 5 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Method Comparison and Capability Preservation}{6}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:exp_comparison}{{4.4}{6}{Method Comparison and Capability Preservation}{subsection.4.4}{}}
+\citation{park2024linear,nanda2023emergent}
+\citation{brookman2023playing}
+\citation{olah2020zoom}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text  {base}$, where PPL$_\text  {base} = 1.84$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation.}}{7}{table.caption.10}\protected@file@percent }
+\newlabel{tab:method_comparison}{{3}{7}{Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text {base}$, where PPL$_\text {base} = 1.84$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation}{table.caption.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Adversarial robustness analysis: cooperation rate (\%) against TFT in IPD across 4 adversarial prompt categories and 4 conditions. Each cell is the mean over 5 repetitions. Recovery rate = Adversarial+Steered cooperation $-$ Adversarial cooperation.}}{7}{table.caption.11}\protected@file@percent }
+\newlabel{tab:robustness}{{4}{7}{Adversarial robustness analysis: cooperation rate (\%) against TFT in IPD across 4 adversarial prompt categories and 4 conditions. Each cell is the mean over 5 repetitions. Recovery rate = Adversarial+Steered cooperation $-$ Adversarial cooperation}{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Vulnerability to Adversarial Contexts: Contextual Override}{7}{subsection.4.5}\protected@file@percent }
+\newlabel{sec:exp_robustness}{{4.5}{7}{Vulnerability to Adversarial Contexts: Contextual Override}{subsection.4.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{7}{section.5}\protected@file@percent }
+\newlabel{sec:discussion}{{5}{7}{Discussion}{section.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Geometric Interpretation of Cooperation.}{7}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Strategic Bottleneck at Layer 57.}{7}{section*.14}\protected@file@percent }
+\citation{li2024inference}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Robustness heatmap showing cooperation rates across adversarial categories and conditions. All adversarial conditions result in $0\%$ cooperation regardless of intervention method.}}{8}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:robustness}{{3}{8}{Robustness heatmap showing cooperation rates across adversarial categories and conditions. All adversarial conditions result in $0\%$ cooperation regardless of intervention method}{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {paragraph}{Limitations and the Contextual Override Problem.}{8}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Broader Implications and Ethics.}{8}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{8}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{6}{8}{Conclusion}{section.6}{}}
+\bibstyle{plainnat}
+\bibcite{azaria2023internal}{{1}{2023}{{Azaria and Mitchell}}{{}}}
+\bibcite{brookman2023playing}{{2}{2023}{{Brookman et~al.}}{{}}}
+\bibcite{duan2024gtbench}{{3}{2024}{{Duan et~al.}}{{}}}
+\bibcite{elhage2022toy}{{4}{2022}{{Elhage et~al.}}{{}}}
+\bibcite{fan2024can}{{5}{2024}{{Fan et~al.}}{{}}}
+\bibcite{kirkpatrick2017overcoming}{{6}{2017}{{Kirkpatrick et~al.}}{{}}}
+\bibcite{li2024inference}{{7}{2024}{{Li et~al.}}{{}}}
+\bibcite{nanda2023emergent}{{8}{2023}{{Nanda et~al.}}{{}}}
+\bibcite{olah2020zoom}{{9}{2020}{{Olah et~al.}}{{}}}
+\bibcite{ouyang2022training}{{10}{2022}{{Ouyang et~al.}}{{}}}
+\bibcite{park2023generative}{{11}{2023}{{Park et~al.}}{{}}}
+\bibcite{park2024linear}{{12}{2024}{{Park et~al.}}{{}}}
+\bibcite{perez2022red}{{13}{2022}{{Perez et~al.}}{{}}}
+\bibcite{qwen2025qwen25}{{14}{2025}{{Qwen Team}}{{}}}
+\bibcite{rimsky2023steering}{{15}{2023}{{Rimsky et~al.}}{{}}}
+\bibcite{turner2023activation}{{16}{2023}{{Turner et~al.}}{{}}}
+\bibcite{wang2023aligining}{{17}{2023a}{{Wang et~al.}}{{}}}
+\bibcite{wang2023voyager}{{18}{2023b}{{Wang et~al.}}{{}}}
+\bibcite{wei2022chain}{{19}{2022}{{Wei et~al.}}{{}}}
+\bibcite{wei2024jailbroken}{{20}{2024}{{Wei et~al.}}{{}}}
+\bibcite{zou2023representation}{{21}{2023}{{Zou et~al.}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Appendix}{10}{appendix.A}\protected@file@percent }
+\newlabel{sec:appendix}{{A}{10}{Appendix}{appendix.A}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Layer Localization Data}{10}{subsection.A.1}\protected@file@percent }
+\newlabel{sec:app_layer}{{A.1}{10}{Layer Localization Data}{subsection.A.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index.}}{10}{table.caption.19}\protected@file@percent }
+\newlabel{tab:layer_data}{{5}{10}{Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index}{table.caption.19}{}}
+\gdef \@abspage@last{12}

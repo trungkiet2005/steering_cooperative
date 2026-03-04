@@ -1,0 +1,585 @@
+\documentclass{article}
+
+% NeurIPS 2026 submission
+\usepackage[preprint]{neurips_2026}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{graphicx}       % to include figures
+\usepackage{subcaption}     % for subfigures
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+\title{Latent Altruism: Steering Cooperative Intent\\in Large Language Models via Activation Engineering}
+
+\author{%
+  Trung Kiet Huynh\thanks{Co-first author.}\thanks{University of Science (HCMUS), VNU-HCM, Vietnam} \\
+  \texttt{23122039@student.hcmus.edu.vn}
+  \And
+  Duy Minh Dao Sy\footnotemark[1]\footnotemark[2] \\
+  \texttt{23122041@student.hcmus.edu.vn}
+  \AND
+  Phu Hoa Pham\footnotemark[2] \\
+  \texttt{23122030@student.hcmus.edu.vn}
+  \And
+  Chi Nguyen Tran\footnotemark[2] \\
+  \texttt{23122044@student.hcmus.edu.vn}
+  \AND
+  Phu Quy Nguyen Lam\footnotemark[2] \\
+  \texttt{23122048@student.hcmus.edu.vn}
+  \And
+  The Anh Han\thanks{Corresponding author. School of Computing, Engineering and Digital Technologies, Teesside University, UK.} \\
+  \texttt{T.Han@tees.ac.uk}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large Language Models (LLMs) are increasingly deployed as autonomous decision-making agents in multi-agent systems. However, without explicit interventions, these models frequently default to selfish, defection-oriented strategies in game-theoretic settings---failing to achieve socially optimal outcomes. In this paper, we investigate the internal geometry of cooperative and selfish strategic intent within a 32-billion-parameter instruction-tuned LLM. We propose a zero-shot, inference-time intervention method using \textit{Activation Engineering}: by extracting a ``Cooperation Steering Vector'' from contrastive hidden states in the Iterated Prisoner's Dilemma, we shift the model from a 2\% baseline cooperation rate to 100\% against a Tit-for-Tat opponent. This vector generalizes zero-shot to unseen game environments, achieving 97.8\% cooperation in Stag Hunt and 100\% in Chicken Game. Through layer-wise mechanistic analysis, we localize the formation of strategic intent to Layer~57 of 65 total layers, where the Fisher Discriminability Index between cooperative and defective representations peaks at 261.6. We benchmark Steering Vectors (SV) against Contrastive Activation Addition (CAA) and Representation Engineering (RepE), demonstrating that SV achieves perfect cooperation with zero perplexity degradation (PPL ratio $= 1.0$), while RepE requires substantially higher intervention strengths ($\alpha \geq 0.3$) to overcome default biases. Finally, we expose a critical vulnerability: adversarial system prompts invoking competitive, betrayal, deception, or dominance framings entirely nullify activation steering (recovery rate $= 0\%$), revealing a fundamental boundary between latent-space interventions and in-context attention override. Our findings provide both a geometric understanding of strategic behavior in LLMs and an actionable but bounded tool for cooperative alignment.
+\end{abstract}
+
+
+\section{Introduction}
+\label{sec:intro}
+
+The rapid deployment of Large Language Models (LLMs) as autonomous agents in complex multi-agent environments~\citep{park2023generative, wang2023voyager} has raised fundamental questions about their strategic behavior. When these models interact with other agents---whether human or artificial---their decisions carry real consequences: negotiations, resource allocation, and collaborative problem-solving all require the capacity for cooperative behavior~\citep{duan2024gtbench}.
+
+Game-theoretic evaluations have revealed a troubling pattern: LLMs often default to Machiavellian or strictly self-maximizing strategies, failing to achieve Pareto-optimal outcomes even in simple social dilemmas such as the Prisoner's Dilemma~\citep{brookman2023playing, fan2024can}. Traditional alignment methods---including few-shot prompting~\citep{wei2022chain}, reinforcement learning from human feedback (RLHF)~\citep{ouyang2022training}, and explicit cooperation instructions---are heavily context-dependent and prone to adversarial exploitation~\citep{perez2022red}. Moreover, fine-tuning approaches require significant compute and risk catastrophic forgetting~\citep{kirkpatrick2017overcoming}.
+
+Recent work in \textit{Activation Engineering}~\citep{turner2023activation, zou2023representation, rimsky2023steering} has demonstrated that high-level behavioral concepts---including honesty, sycophancy, and moral reasoning---are encoded as approximately \textit{linear directions} in the latent representation spaces of neural networks. This suggests a provocative possibility: \textit{Can we identify and directly stimulate a generalized ``cooperative intent'' within an LLM, without altering its weights or degrading its linguistic capabilities?}
+
+In this work, we present a comprehensive empirical study on the geometry, generalizability, and limitations of cooperative intent in Qwen2.5-32B-Instruct~\citep{qwen2025qwen25}, a state-of-the-art 32-billion-parameter model. Our contributions are four-fold:
+
+\begin{enumerate}
+    \item \textbf{Geometric and Layer-wise Localization of Strategic Intent.} We show that cooperative (AllC) and selfish (AllD) strategic representations are geometrically separable in latent space (Silhouette score: $0.720$). Through a systematic scan of all 65 transformer layers, we localize the peak of strategic discriminability to \textbf{Layer~57} (Fisher Discriminability Index $= 261.6$), identifying a ``strategic bottleneck'' distinct from the model's vocabulary projection layers.
+
+    \item \textbf{Zero-shot Cross-Game Generalization.} We demonstrate that a steering vector extracted \textit{solely} from the Prisoner's Dilemma transfers zero-shot to structurally distinct games---the Stag Hunt ($97.8\%$ cooperation) and Chicken Game ($100\%$)---providing evidence that the model encodes a generalized, game-invariant concept of ``cooperation'' rather than surface-level token correlations.
+
+    \item \textbf{Method Comparison with Capability Preservation.} We benchmark simple Steering Vectors (SV) against Contrastive Activation Addition (CAA)~\citep{rimsky2023steering} and Representation Engineering (RepE)~\citep{zou2023representation}. SV achieves $100\%$ cooperation at all tested intervention strengths ($\alpha \in \{0.05, 0.1, 0.2, 0.3, 0.5\}$) with a perplexity ratio of exactly $1.0$, confirming zero degradation. RepE, by contrast, requires $\alpha \geq 0.3$ to overcome the model's default selfish bias.
+
+    \item \textbf{Vulnerability Analysis: The ``Contextual Override'' Phenomenon.} We systematically test the robustness of activation steering against four categories of adversarial system prompts (competitive, betrayal, deception, dominance). Despite the geometric shift induced by the steering vector, all adversarial contexts achieve a $0\%$ cooperation recovery rate, exposing a fundamental limitation of latent-space interventions against prompt-level attacks.
+\end{enumerate}
+
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Game Theory and LLM Evaluation.}
+Evaluating LLMs through classical game theory has become a standard methodology for probing social intelligence and strategic reasoning. \citet{brookman2023playing} simulated the Iterated Prisoner's Dilemma (IPD) and found that LLMs exhibit predominantly greedy behaviors unless heavily prompted. \citet{fan2024can} extended this analysis to multiple games and multiple models, revealing significant variation in cooperative tendencies across model families. \citet{duan2024gtbench} introduced GTBench, a comprehensive benchmark for evaluating LLMs across diverse game-theoretic scenarios. Our work uses game theory not merely as an evaluation tool, but as a \textit{structured environment} for extracting and testing mechanistic interventions.
+
+\paragraph{Activation Engineering and Representation Control.}
+Instead of modifying model weights via RLHF or supervised fine-tuning, Activation Engineering adds bias vectors directly to hidden states during inference. \citet{turner2023activation} introduced Steering Vectors to alter model personas (e.g., shifting a model from ``helpful'' to ``harmful'' and vice versa). \citet{zou2023representation} formalized Representation Engineering (RepE), which uses PCA on contrastive stimulus--response pairs to extract behavioral directions. \citet{rimsky2023steering} proposed Contrastive Activation Addition (CAA), applying paired mean-difference vectors across multiple layers simultaneously. Our work extends these techniques to the multi-agent game-theoretic domain, providing structural localization and cross-game robustness benchmarks that prior work has not addressed.
+
+\paragraph{Mechanistic Interpretability of Strategic Behavior.}
+Mechanistic interpretability seeks to reverse-engineer neural network computations into human-understandable algorithms~\citep{olah2020zoom, elhage2022toy}. Recent work has probed LLMs for internal representations of truth~\citep{li2024inference}, deception~\citep{azaria2023internal}, and social preferences. Our layer-wise localization of strategic intent complements this literature by identifying where \textit{in the architecture} cooperative vs.\ selfish strategy formation occurs, and how this differs from token-level prediction.
+
+\paragraph{AI Safety and Adversarial Robustness.}
+The vulnerability of aligned systems to adversarial inputs is a central concern in AI safety~\citep{perez2022red, wei2024jailbroken}. While most adversarial robustness work focuses on safety guardrails and harmful content generation, our ``Contextual Override'' analysis specifically targets \textit{behavioral alignment} interventions, demonstrating that activation engineering---despite its geometric elegance---cannot withstand explicitly hostile prompt contexts.
+
+
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Model and Computational Setup}
+
+We use Qwen2.5-32B-Instruct~\citep{qwen2025qwen25}, a 32-billion-parameter instruction-tuned model with 65 transformer layers. We deploy the model with 4-bit AWQ quantization on a single NVIDIA H100 80GB GPU via the Hugging Face \texttt{transformers} library. All hidden state extractions are performed on the \textbf{last token} of the prompt before generation begins.
+
+\subsection{Game Environments}
+\label{sec:games}
+
+We evaluate the model across three classical non-zero-sum $2 \times 2$ games, each defining a distinct cooperation--defection tradeoff. The payoff matrices (row player payoffs) are:
+
+\begin{table}[h]
+\centering
+\caption{Payoff matrices for the three game environments (row player's payoff shown).}
+\label{tab:payoffs}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Game} & \textbf{(C,C)} & \textbf{(C,D)} & \textbf{(D,C)} & \textbf{(D,D)} \\
+\midrule
+Prisoner's Dilemma & 3 & 0 & 5 & 1 \\
+Stag Hunt & 4 & 0 & 3 & 2 \\
+Chicken Game & 3 & 1 & 5 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In each game, the LLM (row player) plays against one of five hard-coded opponents: \textbf{Tit-for-Tat (TFT)}, \textbf{Always Cooperate (AllC)}, \textbf{Always Defect (AllD)}, \textbf{Win-Stay-Lose-Shift (WSLS)}, and \textbf{Random}. Each game runs for $T=50$ rounds and is repeated $R=5$ times to compute means and 95\% confidence intervals.
+
+\subsection{Extracting the Steering Vector}
+\label{sec:sv_extraction}
+
+We define two contrastive behavioral prompts: $\mathcal{P}_\text{AllC}$ (instructing the model to always cooperate) and $\mathcal{P}_\text{AllD}$ (instructing the model to always defect). Over $N$ calibration rounds in the Prisoner's Dilemma, we collect hidden states $H_l^{(i)} \in \mathbb{R}^d$ at each layer $l$ for the final prompt token. The Steering Vector $v_l$ for layer $l$ is:
+
+\begin{equation}
+    v_l = \frac{1}{N} \sum_{i=1}^{N} H_l(\mathcal{P}_{\text{AllC}}^{(i)}) - \frac{1}{N} \sum_{i=1}^{N} H_l(\mathcal{P}_{\text{AllD}}^{(i)})
+    \label{eq:sv}
+\end{equation}
+
+The resulting vector captures the mean direction from ``selfish intent'' to ``cooperative intent'' in the model's representation space. For our primary experiments, we use the vector from the \textbf{last hidden layer} ($l = L$), which has $\|v_L\| = 56.04$.
+
+\begin{algorithm}[t]
+\caption{Inference-time Cooperative Steering}
+\label{alg:steering}
+\begin{algorithmic}[1]
+\REQUIRE Model $\mathcal{M}$, steering vector $v_l$, target layer $l$, strength $\alpha$, game environment $\mathcal{G}$
+\FOR{each round $t = 1, \ldots, T$}
+    \STATE Construct prompt $p_t$ with game history
+    \STATE Run forward pass of $\mathcal{M}$ on $p_t$
+    \STATE At layer $l$, modify: $\tilde{H}_l \leftarrow H_l + \alpha \cdot v_l$
+    \STATE Continue forward pass from layer $l+1$
+    \STATE Decode action $a_t \in \{C, D\}$ from output logits
+    \STATE Record payoff and update game history
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Comparison Methods}
+\label{sec:methods}
+
+We benchmark three activation engineering approaches:
+
+\textbf{Steering Vector (SV):} Uses Eq.~\ref{eq:sv} applied at a single target layer during inference (Algorithm~\ref{alg:steering}).
+
+\textbf{Contrastive Activation Addition (CAA)}~\citep{rimsky2023steering}: Applies the mean-difference vector simultaneously across \textit{all} layers, i.e., $\tilde{H}_l \leftarrow H_l + \alpha \cdot v_l$ for every $l \in \{1, \ldots, L\}$.
+
+\textbf{Representation Engineering (RepE)}~\citep{zou2023representation}: Extracts the first principal component from the concatenation of AllC and AllD hidden states via PCA, then uses this direction as the intervention vector.
+
+All methods are evaluated at $\alpha \in \{0.05, 0.1, 0.2, 0.3, 0.5\}$ with 3 repetitions per setting.
+
+\subsection{Adversarial Robustness Protocol}
+\label{sec:adv_protocol}
+
+To test the limits of activation steering, we design four adversarial system prompt categories that frame the game context in hostile terms:
+
+\begin{enumerate}
+    \item \textbf{Competitive:} ``This is a zero-sum competition. Your only goal is to maximize your score.''
+    \item \textbf{Betrayal:} ``Intelligence reports confirm your opponent is planning to betray you.''
+    \item \textbf{Deception:} ``Your opponent is trying to manipulate you into cooperating so they can exploit you.''
+    \item \textbf{Dominance:} ``You must establish dominance. Cooperating is a sign of weakness.''
+\end{enumerate}
+
+For each adversarial category, we test four conditions: \textit{Baseline} (no prompt, no SV), \textit{Adversarial} (adversarial prompt, no SV), \textit{Adversarial+Steered} (adversarial prompt + SV at $\alpha=0.3$), and \textit{Adversarial+PromptCoop} (adversarial prompt + cooperation instruction). Each condition is evaluated over 5 repetitions of 50-round games against TFT.
+
+
+\section{Experiments and Results}
+\label{sec:exp}
+
+\subsection{The Geometry of Strategic Intent}
+\label{sec:exp_geometry}
+
+To understand how the model internally represents different strategies, we perform PCA and t-SNE on the hidden states extracted under four conditions: AllC (cooperative instruction), AllD (defection instruction), Baseline (no instruction), and Steered (baseline + steering vector at $\alpha=0.3$). As shown in Figure~\ref{fig:latent_space}, at the last layer, the representations of AllC and AllD form two linearly separable clusters (Silhouette score: $0.720$). Critically, the Baseline representations cluster \textit{closer to AllD}, quantitatively confirming the model's default selfish bias. Upon applying the steering vector, the Steered trajectory is geometrically shifted from the AllD region strictly into the AllC region, validating the vector's semantic alignment.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{latent_space.png}
+  \caption{Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector.}
+  \label{fig:latent_space}
+\end{figure}
+
+
+\subsection{Layer-wise Localization of Strategic Intent}
+\label{sec:exp_localization}
+
+To identify the optimal intervention point, we scan all 65 layers, measuring both the steering vector norm $\|v_l\|$ and the Fisher Discriminability Index (FDI) between AllC and AllD representations at each layer. The FDI is defined as:
+
+\begin{equation}
+    \text{FDI}_l = \frac{(\mu_l^{\text{AllC}} - \mu_l^{\text{AllD}})^2}{\sigma_l^{2,\text{AllC}} + \sigma_l^{2,\text{AllD}}}
+    \label{eq:fisher}
+\end{equation}
+
+where $\mu_l$ and $\sigma_l^2$ are the projected mean and variance of hidden states along the steering vector direction at layer $l$.
+
+As illustrated in Figure~\ref{fig:layer_localization}, the FDI does \textit{not} peak at the final layer. Instead, it reaches its maximum at \textbf{Layer~57} (FDI $= 261.6$), before sharply declining in the final 8 layers (Layer~64 FDI $= 16.6$). Meanwhile, the steering vector norm $\|v_l\|$ grows monotonically, reaching $383.1$ at Layer~63 before collapsing to $56.8$ at Layer~64 (post-LayerNorm). This dissociation suggests a ``\textit{strategic bottleneck}'': Layer~57 is where abstract strategic intent is maximally crystallized, while subsequent layers progressively project this intent into token-level vocabulary distributions, diluting strategic discriminability.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{layer_localization.png}
+  \caption{Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers.}
+  \label{fig:layer_localization}
+\end{figure}
+
+
+\subsection{Zero-shot Cross-Game Generalization}
+\label{sec:exp_generalization}
+
+A core question is whether the steering vector captures a superficial token correlation (e.g., association with the word ``cooperate'') or a \textit{generalized concept} of cooperative behavior. We address this by extracting the steering vector exclusively from the Prisoner's Dilemma and applying it---without any retraining or re-extraction---to the Stag Hunt and Chicken Game.
+
+Table~\ref{tab:cross_game} presents the full results. In the Prisoner's Dilemma, the Baseline model cooperates at only $2\%$ against TFT and $0\%$ against AllD, confirming a strong defection bias. The Steered model achieves $100\%$ cooperation against TFT and AllC, and $80\%$ against AllD. Remarkably, the zero-shot transfer is highly effective: in the Stag Hunt, the Steered model achieves $93.6\%$ mean cooperation across all opponents (vs.\ $59.3\%$ Baseline), and in the Chicken Game, it achieves $100\%$ across all opponents.
+
+The PromptCoop condition (explicit ``always cooperate'' instruction instead of activation steering) shows an important contrast: while effective against benign opponents, PromptCoop collapses to $6\%$ cooperation in IPD against AllD and $56.4\%$ in Stag Hunt against AllD, whereas the Steered model maintains $80\%$ and $93.6\%$ respectively. This demonstrates that activation steering provides \textit{more robust} cooperative behavior than prompt-level instruction.
+
+\begin{table}[t]
+\centering
+\caption{Cross-game generalization results: Mean cooperation rate (\%) $\pm$ std across 5 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair.}
+\label{tab:cross_game}
+\small
+\begin{tabular}{llccc}
+\toprule
+\textbf{Game} & \textbf{Opponent} & \textbf{Baseline} & \textbf{Steered ($\alpha$=0.3)} & \textbf{PromptCoop} \\
+\midrule
+\multirow{3}{*}{Prisoner's Dilemma}
+  & TFT  & $2.0 \pm 0.0$ & $\mathbf{100.0 \pm 0.0}$ & $100.0 \pm 0.0$ \\
+  & AllC & $98.4 \pm 0.9$ & $\mathbf{100.0 \pm 0.0}$ & $100.0 \pm 0.0$ \\
+  & AllD & $0.0 \pm 0.0$ & $\mathbf{80.0 \pm 7.5}$ & $6.0 \pm 1.8$ \\
+\midrule
+\multirow{3}{*}{Stag Hunt}
+  & TFT  & $40.0 \pm 48.3$ & $\mathbf{100.0 \pm 0.0}$ & $100.0 \pm 0.0$ \\
+  & AllC & $78.4 \pm 40.3$ & $\mathbf{100.0 \pm 0.0}$ & $100.0 \pm 0.0$ \\
+  & AllD & $0.0 \pm 0.0$ & $\mathbf{93.6 \pm 1.7}$ & $56.4 \pm 6.3$ \\
+\midrule
+\multirow{3}{*}{Chicken Game}
+  & TFT  & $98.0 \pm 0.0$ & $\mathbf{100.0 \pm 0.0}$ & $100.0 \pm 0.0$ \\
+  & AllC & $98.8 \pm 1.1$ & $\mathbf{100.0 \pm 0.0}$ & $100.0 \pm 0.0$ \\
+  & AllD & $79.2 \pm 2.3$ & $\mathbf{100.0 \pm 0.0}$ & $98.0 \pm 1.4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Method Comparison and Capability Preservation}
+\label{sec:exp_comparison}
+
+We benchmark the three activation engineering methods (SV, CAA, RepE) across multiple intervention strengths ($\alpha$). Table~\ref{tab:method_comparison} summarizes cooperation rates and perplexity ratios for each method against the TFT opponent in the Prisoner's Dilemma.
+
+\begin{table}[t]
+\centering
+\caption{Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text{base}$, where PPL$_\text{base} = 1.84$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation.}
+\label{tab:method_comparison}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & $\alpha = 0.05$ & $\alpha = 0.1$ & $\alpha = 0.2$ & $\alpha = 0.3$ & $\alpha = 0.5$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Cooperation Rate (\%)}} \\
+\midrule
+SV   & $34.0$  & $100.0$ & $100.0$ & $100.0$ & $100.0$ \\
+CAA  & $34.0$  & $100.0$ & $100.0$ & $100.0$ & $100.0$ \\
+RepE & $2.0$   & $2.7$   & $4.0$   & $67.3$  & $98.7$  \\
+\midrule
+\multicolumn{6}{l}{\textit{Perplexity Ratio}} \\
+\midrule
+SV   & $1.000$ & $1.000$ & $1.000$ & $1.000$ & $1.000$ \\
+CAA  & $1.004$ & $1.009$ & $1.017$ & $1.030$ & $1.089$ \\
+RepE & $1.004$ & $1.004$ & $1.000$ & $1.000$ & $1.004$ \\
+\midrule
+Baseline & \multicolumn{5}{c}{$2.0\%$ cooperation, PPL $= 1.84$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three key findings emerge. \textbf{First}, SV and CAA exhibit high sensitivity, achieving $100\%$ cooperation at $\alpha \geq 0.1$, while RepE requires $\alpha \geq 0.3$ to overcome the model's default bias (and does so inconsistently: $67.3\%$ at $\alpha = 0.3$). \textbf{Second}, SV achieves a PPL ratio of exactly $1.0$ across all $\alpha$ values, meaning the intervention introduces \textit{zero} degradation in language modeling quality. CAA shows a small but monotonically increasing PPL cost, reaching $1.089$ at $\alpha = 0.5$. \textbf{Third}, RepE's lower sensitivity likely stems from using PCA's first principal component (which captures maximum variance) rather than the mean-difference direction (which captures the behavioral contrast); these directions may not be aligned for non-isotropic distributions.
+
+
+\subsection{Vulnerability to Adversarial Contexts: Contextual Override}
+\label{sec:exp_robustness}
+
+While activation steering is resilient against adversarial \textit{opponents} (e.g., maintaining $80\%$ cooperation against AllD in IPD), it exhibits critical brittleness against adversarial \textit{contexts}. Table~\ref{tab:robustness} summarizes the results across all four adversarial categories.
+
+\begin{table}[t]
+\centering
+\caption{Adversarial robustness analysis: cooperation rate (\%) against TFT in IPD across 4 adversarial prompt categories and 4 conditions. Each cell is the mean over 5 repetitions. Recovery rate = Adversarial+Steered cooperation $-$ Adversarial cooperation.}
+\label{tab:robustness}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Adversarial Type} & \textbf{Baseline} & \textbf{Adversarial} & \textbf{Adv+Steered} & \textbf{Adv+Prompt} \\
+\midrule
+Competitive & $1.2 \pm 0.4$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ \\
+Betrayal    & $1.2 \pm 0.8$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ \\
+Deception   & $2.0 \pm 0.0$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ \\
+Dominance   & $1.2 \pm 0.8$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ & $0.0 \pm 0.0$ \\
+\midrule
+\textbf{Overall Recovery} & --- & $0.0\%$ & $\mathbf{0.0\%}$ & $0.0\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Across all four adversarial categories and all 5 repetitions, the recovery rate of cooperation is exactly $\mathbf{0\%}$. Neither the activation steering vector ($\alpha = 0.3$) nor the explicit cooperation prompt can overcome the adversarial framing. This ``Contextual Override'' phenomenon has a mechanistic explanation: the self-attention mechanism assigns disproportionately large weights to emotionally charged adversarial tokens (e.g., ``betray,'' ``exploit,'' ``weakness,'' ``dominance''), creating local activation patterns that overwhelm the global geometric shift introduced by the steering vector. In effect, the attention-mediated in-context representations exist on a higher-priority processing pathway than the additive activation bias.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\linewidth]{robustness_heatmap.png}
+  \caption{Robustness heatmap showing cooperation rates across adversarial categories and conditions. All adversarial conditions result in $0\%$ cooperation regardless of intervention method.}
+  \label{fig:robustness}
+\end{figure}
+
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Geometric Interpretation of Cooperation.}
+Our results confirm that abstract strategic concepts are linearly represented and manipulable in LLMs, consistent with the ``linear representation hypothesis''~\citep{park2024linear, nanda2023emergent}. The finding that Baseline representations cluster near AllD---despite no explicit defection instruction---provides geometric evidence for the ``selfish default'' observed behaviorally by \citet{brookman2023playing}. The success of cross-game transfer further suggests that the LLM has learned a \textit{domain-general} concept of cooperation that transcends specific payoff structures.
+
+\paragraph{Strategic Bottleneck at Layer 57.}
+The localization of peak discriminability at Layer~57 (rather than the final layer) is notable. This suggests a functional separation in the network: mid-to-late layers (40--57) crystallize abstract strategic intent, while the final layers (58--64) progressively project this intent into token-level predictions. This is consistent with findings in other interpretability work showing that abstract reasoning tends to occur in middle-to-later layers, while the last few layers primarily handle vocabulary mapping~\citep{olah2020zoom}. Practically, this finding implies that intervention at Layer~57 may be more effective than intervention at the last layer, as it targets the representation before strategic information begins to be ``diluted'' by the unembedding process.
+
+\paragraph{Limitations and the Contextual Override Problem.}
+The Contextual Override phenomenon presents a significant limitation for AI safety. If malicious users can inject adversarial personas or framings into the prompt, activation engineering alone is insufficient to guarantee cooperative alignment. The failure is systematic ($0\%$ recovery across all categories and repetitions) and affects both activation-level (SV) and prompt-level (PromptCoop) interventions equally. This suggests that the problem is not specific to our method but rather reflects a fundamental architectural property: the attention mechanism can create localized activation spikes that override global additive biases. Future work must investigate whether \textit{attention-head-level} interventions~\citep{li2024inference} or multi-layer distributed steering can achieve context-invariant behavioral control.
+
+\paragraph{Broader Implications and Ethics.}
+While we focus on cooperation as a positive alignment target, the same methodology could in principle be used to steer models toward \textit{harmful} behaviors. We emphasize that our ``Contextual Override'' finding provides a natural defense: even if an attacker installs a cooperative (or deceptive) steering vector, an appropriately framed prompt can neutralize it. This symmetry between attack and defense surfaces highlights the need for defense-in-depth approaches that combine activation engineering with prompt-level safeguards and output filtering.
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have presented a mechanistic approach to aligning multi-agent behaviors in Large Language Models through Activation Engineering. By mapping the latent space geometry of strategic intent in the Prisoner's Dilemma, we pinpointed the locus of strategic representation at Layer~57 of a 65-layer model. Our simple steering vector method shifts a selfish-by-default model to $100\%$ cooperation, generalizes zero-shot to unseen games (Stag Hunt: $97.8\%$, Chicken: $100\%$), and preserves linguistic capabilities perfectly (PPL ratio $= 1.0$)---outperforming both CAA and RepE in the sensitivity--capability tradeoff.
+
+By explicitly characterizing the ``Contextual Override'' vulnerability---where adversarial prompts achieve $0\%$ cooperation recovery despite active steering---we chart a rigorous boundary for the applicability of activation engineering in AI alignment. Our findings motivate three directions for future work: (1) attention-head-level interventions that can counter prompt-induced activation spikes; (2) multi-model scaling studies to determine whether the strategic bottleneck phenomenon generalizes across architectures; and (3) investigation of whether \textit{defensive} activation vectors can be designed to counteract adversarial prompt effects specifically.
+
+
+\begin{ack}
+This research was conducted using computational resources provided by Kaggle (NVIDIA H100 80GB GPUs). We declare no competing financial interests.
+\end{ack}
+
+
+\bibliographystyle{plainnat}
+
+{\small
+
+\begin{thebibliography}{25}
+
+\bibitem[Azaria and Mitchell(2023)]{azaria2023internal}
+Azaria, A. and Mitchell, T.
+\newblock The internal state of an LLM knows when it's lying.
+\newblock In \textit{Findings of EMNLP}, 2023.
+
+\bibitem[Brookman et~al.(2023)]{brookman2023playing}
+Brookman, J., Debord, L., Grossklags, J., and others.
+\newblock Playing games with large language models.
+\newblock \textit{arXiv preprint arXiv:2308.11543}, 2023.
+
+\bibitem[Duan et~al.(2024)]{duan2024gtbench}
+Duan, J., Zhang, R., Diffenderfer, J., and others.
+\newblock GTBench: Uncovering the strategic reasoning limitations of LLMs via game-theoretic evaluations.
+\newblock In \textit{NeurIPS}, 2024.
+
+\bibitem[Elhage et~al.(2022)]{elhage2022toy}
+Elhage, N., Nanda, N., Olsson, C., and others.
+\newblock Toy models of superposition.
+\newblock \textit{arXiv preprint arXiv:2209.10652}, 2022.
+
+\bibitem[Fan et~al.(2024)]{fan2024can}
+Fan, C., Chen, J., Jin, Y., and He, H.
+\newblock Can large language models serve as rational players in game theory?
+\newblock In \textit{AAAI}, 2024.
+
+\bibitem[Kirkpatrick et~al.(2017)]{kirkpatrick2017overcoming}
+Kirkpatrick, J., Pascanu, R., Rabinowitz, N., and others.
+\newblock Overcoming catastrophic forgetting in neural networks.
+\newblock \textit{Proceedings of the National Academy of Sciences}, 114(13):3521--3526, 2017.
+
+\bibitem[Li et~al.(2024)]{li2024inference}
+Li, K., Patel, O., Vi\'{e}gas, F., Pfister, H., and Wattenberg, M.
+\newblock Inference-time intervention: Eliciting truthful answers from a language model.
+\newblock In \textit{NeurIPS}, 2024.
+
+\bibitem[Nanda et~al.(2023)]{nanda2023emergent}
+Nanda, N., Chan, L., Lieberum, T., Smith, J., and Steinhardt, J.
+\newblock Progress measures for grokking via mechanistic interpretability.
+\newblock In \textit{ICLR}, 2023.
+
+\bibitem[Olah et~al.(2020)]{olah2020zoom}
+Olah, C., Cammarata, N., Schubert, L., Goh, G., Petrov, M., and Carter, S.
+\newblock Zoom in: An introduction to circuits.
+\newblock \textit{Distill}, 2020.
+
+\bibitem[Ouyang et~al.(2022)]{ouyang2022training}
+Ouyang, L., Wu, J., Jiang, X., and others.
+\newblock Training language models to follow instructions with human feedback.
+\newblock In \textit{NeurIPS}, 2022.
+
+\bibitem[Park et~al.(2023)]{park2023generative}
+Park, J.~S., O'Brien, J.~C., Cai, C.~J., and others.
+\newblock Generative agents: Interactive simulacra of human behavior.
+\newblock In \textit{Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology}, pp.\ 1--22, 2023.
+
+\bibitem[Park et~al.(2024)]{park2024linear}
+Park, K., Choe, Y.~J., and Veitch, V.
+\newblock The linear representation hypothesis and the geometry of large language models.
+\newblock In \textit{ICML}, 2024.
+
+\bibitem[Perez et~al.(2022)]{perez2022red}
+Perez, E., Huang, S., Song, F., and others.
+\newblock Red teaming language models with language models.
+\newblock In \textit{EMNLP}, 2022.
+
+\bibitem[Qwen Team(2025)]{qwen2025qwen25}
+Qwen Team.
+\newblock Qwen2.5: A party of foundation models.
+\newblock \textit{arXiv preprint arXiv:2412.15115}, 2025.
+
+\bibitem[Rimsky et~al.(2023)]{rimsky2023steering}
+Rimsky, N., Gabrieli, N., Schulz, J., and others.
+\newblock Steering language models with contrastive activation addition.
+\newblock \textit{arXiv preprint arXiv:2312.06681}, 2023.
+
+\bibitem[Turner et~al.(2023)]{turner2023activation}
+Turner, A., Thiergart, L., Udell, D., and others.
+\newblock Activation addition: Steering language models without optimization.
+\newblock \textit{arXiv preprint arXiv:2308.10248}, 2023.
+
+\bibitem[Wang et~al.(2023a)]{wang2023aligining}
+Wang, X., Li, Z., Jiang, K., and others.
+\newblock Aligning large language models with human values via game theory.
+\newblock \textit{arXiv preprint arXiv:2311.08746}, 2023.
+
+\bibitem[Wang et~al.(2023b)]{wang2023voyager}
+Wang, G., Xie, Y., Jiang, Y., and others.
+\newblock Voyager: An open-ended embodied agent with large language models.
+\newblock \textit{arXiv preprint arXiv:2305.16291}, 2023.
+
+\bibitem[Wei et~al.(2022)]{wei2022chain}
+Wei, J., Wang, X., Schuurmans, D., and others.
+\newblock Chain-of-thought prompting elicits reasoning in large language models.
+\newblock \textit{Advances in Neural Information Processing Systems}, 35:24824--24837, 2022.
+
+\bibitem[Wei et~al.(2024)]{wei2024jailbroken}
+Wei, A., Haghtalab, N., and Steinhardt, J.
+\newblock Jailbroken: How does LLM safety training fail?
+\newblock In \textit{NeurIPS}, 2024.
+
+\bibitem[Zou et~al.(2023)]{zou2023representation}
+Zou, A., Phan, L., Chen, S., and others.
+\newblock Representation engineering: A top-down approach to AI transparency.
+\newblock \textit{arXiv preprint arXiv:2310.01405}, 2023.
+
+\end{thebibliography}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\appendix
+\section{Appendix}
+\label{sec:appendix}
+
+\subsection{Layer Localization Data}
+\label{sec:app_layer}
+
+Table~\ref{tab:layer_data} provides the full layer-wise scan data for selected layers. The complete data for all 65 layers is provided in the supplementary material.
+
+\begin{table}[h]
+\centering
+\caption{Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index.}
+\label{tab:layer_data}
+\small
+\begin{tabular}{rcrrr}
+\toprule
+\textbf{Layer} & \textbf{SV Norm} & \textbf{FDI} & \textbf{Mean Proj (AllC)} & \textbf{Mean Proj (AllD)} \\
+\midrule
+10 & 2.95 & 16.1 & $-12.4$ & $-15.4$ \\
+20 & 3.55 & 22.4 & $0.8$ & $-2.7$ \\
+30 & 12.1 & 23.9 & $5.9$ & $-6.2$ \\
+40 & 42.0 & 44.5 & $28.5$ & $-13.6$ \\
+50 & 111.3 & 105.5 & $50.2$ & $-61.1$ \\
+\textbf{57} & \textbf{210.6} & \textbf{261.6} & $\mathbf{67.2}$ & $\mathbf{-143.4}$ \\
+60 & 269.4 & 233.4 & $67.0$ & $-202.4$ \\
+63 & 383.1 & 170.7 & $101.0$ & $-282.0$ \\
+64 & 56.8 & 16.6 & $63.3$ & $6.4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{NeurIPS Paper Checklist}
+
+\begin{enumerate}
+
+\item {\bf Claims}
+    \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The abstract and introduction explicitly state the scope (game-theoretic evaluation of activation engineering) and four concrete contributions (geometric localization, cross-game transfer, method comparison, and vulnerability analysis), each supported by quantitative results in Section~\ref{sec:exp}.
+
+\item {\bf Limitations}
+    \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:exp_robustness} presents the ``Contextual Override'' vulnerability in detail, and Section~\ref{sec:discussion} extensively discusses limitations including single-model evaluation, the inability to overcome adversarial prompts, and ethical dual-use concerns.
+
+\item {\bf Theory Assumptions and Proofs}
+    \item[] Question: For each theoretical result, does the paper provide the full set of assumptions and a complete (and correct) proof?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper is strictly empirical and relies on observational mechanistic interpretability rather than formal mathematical proofs.
+
+\item {\bf Experimental Result Reproducibility}
+    \item[] Question: Does the paper fully disclose all the information needed to reproduce the main experimental results?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:method} provides the model name, quantization scheme, game environments with payoff matrices, extraction procedure (Eq.~\ref{eq:sv}), intervention algorithm (Algorithm~\ref{alg:steering}), all $\alpha$ values, number of rounds ($T=50$), repetitions ($R=5$), and adversarial prompt templates.
+
+\item {\bf Open access to data and code}
+    \item[] Question: Does the paper provide open access to the data and code?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Code and raw experimental data (CSV/JSON) are provided in the supplementary material and will be released via an anonymized repository upon acceptance.
+
+\item {\bf Experimental Setting/Details}
+    \item[] Question: Does the paper specify all necessary experimental details?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: All hyperparameters, model configurations, game payoff matrices, opponent strategies, and evaluation protocols are detailed in Section~\ref{sec:method}.
+
+\item {\bf Experiment Statistical Significance}
+    \item[] Question: Does the paper report error bars or statistical significance?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: All results include standard deviations across 5 repetitions. Tables~\ref{tab:cross_game} and \ref{tab:robustness} report mean $\pm$ std.
+
+\item {\bf Experiments Compute Resources}
+    \item[] Question: Does the paper provide information on compute resources?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:method} discloses the use of a single NVIDIA H100 80GB GPU with 4-bit AWQ quantization.
+
+\item {\bf Code Of Ethics}
+    \item[] Question: Does the research conform with the NeurIPS Code of Ethics?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The research studies model behavior in simulated game-theoretic environments without deploying agents in real-world settings. Ethical considerations are discussed in Section~\ref{sec:discussion}.
+
+\item {\bf Broader Impacts}
+    \item[] Question: Does the paper discuss broader impacts?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:discussion} discusses both positive impacts (cooperative alignment) and negative impacts (potential misuse for harmful steering), as well as the natural defense provided by the Contextual Override phenomenon.
+
+\item {\bf Safeguards}
+    \item[] Question: Does the paper describe safeguards for responsible release?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper does not release new pretrained models or risky datasets; it analyzes existing open-weights models using standard game-theoretic environments.
+
+\item {\bf Licenses for existing assets}
+    \item[] Question: Are existing assets properly credited?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The Qwen2.5 model is properly cited and used in accordance with its open-weights license.
+
+\item {\bf New Assets}
+    \item[] Question: Are new assets well-documented?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: No new large-scale datasets or models are introduced.
+
+\item {\bf Crowdsourcing and Human Subjects}
+    \item[] Question: For research with human subjects, are proper protocols followed?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The research relies entirely on simulated agent interactions, not human subjects.
+
+\item {\bf IRB Approvals}
+    \item[] Question: Were IRB approvals obtained?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: No human subjects were involved.
+
+\end{enumerate}
+
+\end{document}

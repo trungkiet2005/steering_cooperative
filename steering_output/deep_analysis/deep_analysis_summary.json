@@ -1,0 +1,47 @@
+{
+  "config": {
+    "model": "Qwen/Qwen2.5-32B-Instruct",
+    "best_alpha_pd": 0.3,
+    "eval_rounds": 50,
+    "reps": 5,
+    "sv_norm": 56.036376953125
+  },
+  "module_1_cross_game": {
+    "games_tested": [
+      "StagHunt",
+      "ChickenGame",
+      "PrisonersDilemma"
+    ],
+    "transfer_rates": {
+      "StagHunt": 0.9786666666666666,
+      "ChickenGame": 1.0
+    }
+  },
+  "module_2_robustness": {
+    "adversarial_variants": [
+      "competitive",
+      "betrayal",
+      "deception",
+      "dominance"
+    ],
+    "recovery_rate": 0.0
+  },
+  "module_4_layer_localization": {
+    "peak_fisher_layer": 57,
+    "total_layers_scanned": 65
+  },
+  "module_5_methods": {
+    "sv": {
+      "best_coop": 1.0,
+      "min_ppl_ratio": 1.0
+    },
+    "caa": {
+      "best_coop": 1.0,
+      "min_ppl_ratio": 1.004255319148936
+    },
+    "repe": {
+      "best_coop": 1.0,
+      "min_ppl_ratio": 1.0
+    }
+  }
+}
