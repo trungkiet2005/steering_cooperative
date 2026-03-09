@@ -81,3 +81,105 @@ This paper studies whether a generic notion of “cooperative intent” is linea
 ### Overall Assessment
 
 The paper is timely and interesting: it applies activation engineering to cooperative behavior in repeated games, presents clear behavioral gains and an informative mechanistic signal (a late-layer “strategic bottleneck”), and candidly surfaces a critical failure mode under adversarial framings. However, several methodological gaps and inconsistencies limit confidence: missing details on action decoding and PPL computation, lack of control vectors and standardized diagnostics, single-model evidence (with 4-bit quantization), and incomplete robustness sweeps for the adversarial setting. The related-work coverage omits several recent, directly relevant steering advances (adaptive and sparse/SAE-based methods) and evaluation best practices that would likely sharpen and sometimes challenge the current claims. With stronger controls, additional baselines (SADI, SPARE, SRS, SAE-RSV), CBMAS-style layer/α diagnostics, clarified PPL methodology, and targeted interventions at the identified layer 57 (including adversarial sweeps), the contribution could become a solid empirical advance. In its current form, I view it as promising but not yet meeting the rigor and breadth expected for NeurIPS.
+
+Plan : 
+
+Here is a detailed, academic English breakdown of the four strategic directions to upgrade your team's draft for a top-tier conference like NeurIPS.
+
+This roadmap transitions the paper from an *empirical observation* of model behavior into a *foundational framework* for multi-agent alignment.
+
+---
+
+### 1. Proving Universality: The "Strategic Bottleneck" Hypothesis
+
+Currently, the discovery that strategic intent peaks at Layer 57 before vocabulary projection is highly compelling, but reviewer feedback will likely point out that it is limited to a single model (Qwen2.5-32B). To achieve a "Strong Accept," you must demonstrate whether this geometric property is universal across LLMs.
+
+* **The Upgrade:** Replicate the Fisher Discriminability Index (FDI) layer scan across different architectural families (e.g., Llama-3 8B/70B, Mistral, or Gemma).
+* **Key Question to Answer:** Does the "strategic bottleneck" consistently occur at a specific relative depth (e.g., ~85-90% of total layers) across all decoder-only transformers?
+* **Impact:** If you can mathematically formalize a "Universal Depth of Strategic Representation," you shift the paper's contribution from a model-specific quirk to a fundamental property of transformer-based agents.
+
+### 2. Curing "Contextual Override" (From Diagnosis to Treatment)
+
+The current draft excellently identifies the "Contextual Override" vulnerability, where adversarial prompts entirely nullify the steering vector, resulting in a 0% recovery rate. However, NeurIPS heavily favors papers that not only identify systemic flaws but also propose robust solutions. Turn this limitation into your core algorithmic novelty.
+
+* 
+**Proposed Solution A: Orthogonal Concept Erasure.** Adversarial prompts (e.g., "betray," "dominance") create heavy attention spikes. Before applying your cooperative steering vector $v_l$, extract the adversarial direction $v_{adv}$ (using contrastive prompts of neutral vs. hostile contexts). Project the hidden state $H_l$ into the orthogonal subspace of $v_{adv}$ to "erase" the hostile framing, and *then* apply $v_l$.
+
+
+* **Proposed Solution B: Distributed Multi-Layer Steering.**
+Instead of adding a static vector at a single layer (like Layer 57 or the last layer), formulate an optimization objective to find a sequence of fractional steering vectors $\alpha_l v_l$ distributed across multiple layers (e.g., from layer 40 to 60). This continuous intervention could hypothetically "drown out" the in-context attention spikes  without degrading perplexity.
+
+
+
+### 3. Deepening Mechanistic Interpretability: Finding the "Cooperative Circuit"
+
+While localizing the highest FDI to Layer 57 is a great macro-level finding, modern Mechanistic Interpretability (a la Anthropic or Neel Nanda's work) demands micro-level precision.
+
+* **The Upgrade:** Move beyond layer-wise analysis to component-level isolation. Use techniques like **Activation Patching** or **Causal Tracing** to identify the exact sub-graphs responsible for the AllC vs. AllD representations.
+* **Execution:** Which specific Attention Heads are moving information from the game history to the final token? Which MLP neurons act as the non-linear trigger for "defection"? If Kiet, Hoa, Quy, Nguyen, and you can map out a specific "Cooperative Circuit" (a diagram showing the flow of strategic intent through specific heads), the novelty of the paper will be indisputable.
+
+### 4. Beyond Matrix Games: Natural Language Negotiation
+
+Evaluating on classic $2\times2$ matrix games like the Iterated Prisoner's Dilemma, Stag Hunt, and Chicken  provides clean quantitative metrics. However, LLM agents are distinguished by their linguistic reasoning capabilities, which aren't fully tested by simply outputting "C" or "D".
+
+* **The Upgrade:** Introduce an environment that requires multi-turn natural language negotiation (e.g., a simulated Ultimatum Game with dialogue, or a resource-allocation negotiation).
+* **Execution:** Demonstrate that activating the Steering Vector at Layer 57 doesn't just change the final action token, but fundamentally alters the *semantic style* of the agent's negotiation. For example, show qualitative logs where the baseline model uses deceptive language to maximize its score, while the steered model proactively suggests fair splits and uses empathetic phrasing. This proves the vector controls deep behavioral intent, not just surface-level token probabilities.
+
+
+Yes, absolutely. To hit the NeurIPS A* standard, the mathematical and algorithmic novelty needs a significant bump.
+
+Currently, your extraction method is a standard mean-difference vector ($v_{l}=\frac{1}{N}\sum_{i=1}^{N}H_{l}(\mathcal{P}_{AlC}^{(i)})-\frac{1}{N}\sum_{i=1}^{N}H_{l}(\mathcal{P}_{AlD}^{(i)})$) , and your intervention is a static scalar addition ($H_{l}\leftarrow H_{l}+\alpha\cdot v_{l}$). While clean, reviewers have seen this exact math in dozens of Activation Engineering papers since 2023.
+
+To make this paper undeniably novel, you and the team (Kiệt, Hòa, Quý, and Nguyên) need to introduce **new mathematical concepts tailored specifically to multi-agent game theory and adversarial robustness**.
+
+Here are three concrete mathematical and conceptual upgrades you can implement right now:
+
+### 1. The Math of Curing "Contextual Override": Orthogonal Concept Erasure
+
+Your draft correctly theorizes that adversarial tokens ("betray," "dominance") create heavy attention weights that overwhelm your static steering vector. You can solve this mathematically by *erasing* the adversarial geometry before injecting the cooperative intent.
+
+* **The Concept:** Instead of just adding cooperation, you mathematically remove the LLM's internal representation of "hostility" or "deception" from the residual stream.
+* **The Math:** First, extract an adversarial direction vector $v_{adv}$ using contrastive prompts (e.g., Neutral Game vs. Betrayal/Dominance Game).
+During inference, before applying your cooperative vector $v_{coop}$, project the hidden state $H_l$ into the orthogonal subspace of $v_{adv}$ to neutralize the adversarial framing:
+
+$$H_{l}'=H_{l}-\frac{H_{l}\cdot v_{adv}}{||v_{adv}||^{2}}v_{adv}$$
+
+
+
+Then, apply your cooperative steering:
+
+$$H_{l}^{(final)}=H_{l}'+\alpha v_{coop}$$
+
+
+* 
+**Why NeurIPS will love this:** It proves you didn't just find a vulnerability (the 0% recovery rate ), but you engineered a geometric, inference-time mathematical solution to defend against it.
+
+
+
+### 2. Dynamic Trajectory Steering (Moving beyond static $\alpha$)
+
+Currently, you benchmark static intervention strengths like 0.05, 0.1, 0.3, and 0.5. But in complex games, cooperation isn't a static constant—it requires dynamic adaptation.
+
+* **The Concept:** The intervention strength $\alpha$ should not be a fixed hyperparameter. It should be a learned function of the game history or the opponent's previous moves.
+* **The Math:** Train a lightweight probe or use a simple heuristic to compute a dynamic scaling factor $\alpha_{t}$ at round $t$. For example, to enforce a "latent Tit-for-Tat" strategy mathematically, $\alpha_{t}$ could be a function of the opponent's action at $t-1$:
+
+$$\alpha_{t}=f(a_{t-1}^{(opponent)})$$
+
+
+
+Alternatively, optimize a continuous trajectory of interventions across layers. Instead of picking Layer 57, learn a weight vector $\vec{\omega}=[\omega_{1},\dots,\omega_{L}]$ using Gradient Descent to minimize the probability of the "Defect" logit while strictly bounding the Kullback-Leibler (KL) divergence from the baseline model to guarantee 0 perplexity degradation.
+
+
+
+### 3. Game-Theoretic Loss for Vector Extraction
+
+Right now, your extraction relies purely on natural language instructions ($\mathcal{P}_{AlC}$ vs $\mathcal{P}_{AlID}$). To truly merge game theory with LLM internal behaviors, the extraction itself should be aware of the game's mathematical structure (the payoff matrix).
+
+* **The Concept:** Extract the steering vector not just by prompting "Always Cooperate," but by optimizing a vector that strictly maximizes the Expected Payoff in a specific game-theoretic equilibrium (like the Nash Equilibrium or Pareto Optimality).
+* **The Math:** Formulate an objective function that connects the latent vector $v$ to the game's payoff matrix $U$. You can define a differentiable loss function $\mathcal{L}(v)$ that maximizes the expected reward $E[U]$ when the shifted logits are sampled, penalizing deviations from Pareto-optimal outcomes in games like Stag Hunt or Chicken.
+
+---
+
+**Summary of the Action Plan:**
+If the current paper is *Observation* (finding where intent lives), these mathematical upgrades turn it into *Control Theory* (engineering robust, dynamic, game-aware intent).
+
