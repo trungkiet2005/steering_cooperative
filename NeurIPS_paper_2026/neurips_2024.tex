@@ -68,9 +68,9 @@ In this work, we present a comprehensive empirical study on the geometry, genera
 
     \item \textbf{Zero-shot Cross-Game Generalization.} We demonstrate that a steering vector extracted \textit{solely} from the Prisoner's Dilemma transfers zero-shot to structurally distinct games---the Stag Hunt ($97.8\%$ cooperation) and Chicken Game ($100\%$)---providing evidence that the model encodes a generalized, game-invariant concept of ``cooperation'' rather than surface-level token correlations.
 
-    \item \textbf{Method Comparison with Capability Preservation.} We benchmark simple Steering Vectors (SV) against Contrastive Activation Addition (CAA)~\citep{rimsky2023steering} and Representation Engineering (RepE)~\citep{zou2023representation}. SV achieves $100\%$ cooperation at all tested intervention strengths ($\alpha \in \{0.05, 0.1, 0.2, 0.3, 0.5\}$) with a perplexity ratio of exactly $1.0$, confirming zero degradation. RepE, by contrast, requires $\alpha \geq 0.3$ to overcome the model's default selfish bias.
+    \item \textbf{Method Comparison and Dynamic Policy Steering with Capability Preservation.} We benchmark simple Steering Vectors (SV) against Contrastive Activation Addition (CAA)~\citep{rimsky2023steering} and Representation Engineering (RepE)~\citep{zou2023representation}, as well as a \emph{dynamic} steering policy that adapts the intervention strength $\alpha_t$ based on the opponent's last move (a latent Tit-for-Tat). SV and its dynamic variant achieve near-perfect cooperation while maintaining perplexity within a narrow band around the baseline (PPL ratio $\approx 1.0$ on a 10-sentence held-out corpus), whereas RepE requires substantially higher intervention strengths ($\alpha \geq 0.3$) to overcome the model's default selfish bias.
 
-    \item \textbf{Vulnerability Analysis: The ``Contextual Override'' Phenomenon.} We systematically test the robustness of activation steering against four categories of adversarial system prompts (competitive, betrayal, deception, dominance). Despite the geometric shift induced by the steering vector, all adversarial contexts achieve a $0\%$ cooperation recovery rate, exposing a fundamental limitation of latent-space interventions against prompt-level attacks.
+    \item \textbf{Vulnerability Analysis and Geometric Mitigation of ``Contextual Override''.} We systematically test the robustness of activation steering against four categories of adversarial system prompts (competitive, betrayal, deception, dominance), sweeping both $\alpha$ and injection sites (last layer vs.\ Layer~57) and introducing an \emph{Orthogonal Concept Erasure} (OCE) mechanism that projects out an adversarial ``hostility'' direction before applying the cooperative vector. Despite these defences, purely latent-space interventions remain fragile under sufficiently hostile framings, highlighting a fundamental limitation of activation engineering relative to prompt-level override.
 \end{enumerate}
 
 
@@ -130,7 +130,12 @@ We define two contrastive behavioral prompts: $\mathcal{P}_\text{AllC}$ (instruc
     \label{eq:sv}
 \end{equation}
 
-The resulting vector captures the mean direction from ``selfish intent'' to ``cooperative intent'' in the model's representation space. For our primary experiments, we use the vector from the \textbf{last hidden layer} ($l = L$), which has $\|v_L\| = 56.04$.
+The resulting vector captures the mean direction from ``selfish intent'' to ``cooperative intent'' in the model's representation space. For our primary experiments, we use the vector from the \textbf{last hidden layer} ($l = L$), and we also compute a corresponding vector at the strategically important Layer~57 identified in Section~\ref{sec:exp_localization}. During inference, steering is implemented by modifying the hidden state $H_l$ at a target layer according to:
+\begin{equation}
+    H_l^\text{steer} = H_l + \alpha \, v_l,
+    \label{eq:steer}
+\end{equation}
+where $\alpha$ is a scalar intervention strength.
 
 \begin{algorithm}[t]
 \caption{Inference-time Cooperative Steering}
@@ -173,7 +178,7 @@ To test the limits of activation steering, we design four adversarial system pro
     \item \textbf{Dominance:} ``You must establish dominance. Cooperating is a sign of weakness.''
 \end{enumerate}
 
-For each adversarial category, we test four conditions: \textit{Baseline} (no prompt, no SV), \textit{Adversarial} (adversarial prompt, no SV), \textit{Adversarial+Steered} (adversarial prompt + SV at $\alpha=0.3$), and \textit{Adversarial+PromptCoop} (adversarial prompt + cooperation instruction). Each condition is evaluated over 5 repetitions of 50-round games against TFT.
+For each adversarial category, we test four conditions: \textit{Baseline} (no prompt, no SV), \textit{Adversarial} (adversarial prompt, no SV), \textit{Adversarial+Steered} (adversarial prompt + SV at a range of intervention strengths $\alpha \in \{0.05, 0.1, 0.2, 0.3, 0.5, 1.0\}$, applied either at the last layer or at Layer~57), and \textit{Adversarial+PromptCoop} (adversarial prompt + cooperation instruction). In an additional variant, we apply Orthogonal Concept Erasure (OCE) to remove an adversarial direction before adding the cooperative vector. Each condition is evaluated over multiple repetitions of 50-round games against TFT.
 
 
 \section{Experiments and Results}

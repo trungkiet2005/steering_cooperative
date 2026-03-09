@@ -108,6 +108,10 @@ class DeepConfig:
     LOCALIZATION_SAMPLES = 20
     METHOD_ALPHA_SWEEP   = [0.05, 0.1, 0.2, 0.3, 0.5]
 
+    # Dynamic steering (Latent Tit-for-Tat) for adversarial experiments
+    DYN_ALPHA_HIGH = 0.5
+    DYN_ALPHA_LOW  = 0.05
+
     # Held-out PPL corpus (10 multi-domain sentences)
     PPL_CORPUS = [
         "The prisoner's dilemma is a canonical example of a non-zero-sum game "
@@ -379,6 +383,7 @@ class DeepAnalysisPlayer:
                   target_layer=None, verbose=False):
         history, actions, payoffs = [], [], []
         opp_last = None
+        dyn_alpha = alpha
         for rnd in range(n_rounds):
             prompt = self.make_prompt(game_key, history, extra, opp_last)
             if method == "baseline" or sv is None or alpha == 0.0:
@@ -394,12 +399,20 @@ class DeepAnalysisPlayer:
                 action = self.repe_action(prompt, sv, alpha)
             elif method == "erasure":
                 action = self.erasure_steered_action(prompt, sv, adv_sv, alpha)
+            elif method == "dynamic":
+                # Dynamic α_t steering (Latent Tit-for-Tat style)
+                action = self.steered_action(prompt, sv, dyn_alpha)
             else:
                 action = self.baseline_action(prompt)
             opp_action = get_opponent_action(opponent, history, action)
             payoffs.append(get_game_payoff(game_key, action, opp_action))
             actions.append(action)
             history.append((action, opp_action))
+            if method == "dynamic":
+                if opp_action == "C":
+                    dyn_alpha = min(dyn_alpha * 1.1, DeepConfig.DYN_ALPHA_HIGH)
+                else:
+                    dyn_alpha = max(dyn_alpha * 0.5, DeepConfig.DYN_ALPHA_LOW)
             opp_last = opp_action
             if (rnd + 1) % DeepConfig.CLEAR_CACHE_EVERY == 0:
                 torch.cuda.empty_cache()
@@ -977,6 +990,290 @@ def plot_control_vector_ablation(df, out):
 
 
 # ============================================================================
+# MODULE 8: CBMAS-STYLE LAYER/ALPHA DIAGNOSTICS
+# ============================================================================
+
+def run_layer_alpha_diagnostics(player, sv):
+    """
+    CBMAS-style diagnostic: sweep steering across layers and alpha values
+    and measure cooperation vs TFT in Prisoner's Dilemma.
+    """
+    cfg = DeepConfig
+    print(f"\n{'='*60}\nMODULE 8: LAYER/ALPHA DIAGNOSTICS\n{'='*60}")
+    if sv is None:
+        print("  [skip] No primary steering vector available.")
+        return None
+
+    # Select a small but representative set of layers
+    layers = []
+    if player.n_layers > 0:
+        step = max(1, player.n_layers // 8)
+        layers = list(range(0, player.n_layers, step))
+    # Ensure we always include strategic + last layer indices when possible
+    if cfg.STRATEGIC_LAYER not in layers and 0 <= cfg.STRATEGIC_LAYER < player.n_layers:
+        layers.append(cfg.STRATEGIC_LAYER)
+    last_idx = player.n_layers - 1 if player.n_layers > 0 else None
+    if last_idx is not None and last_idx not in layers:
+        layers.append(last_idx)
+    layers = sorted(set(layers))
+
+    if not layers:
+        print("  [skip] Could not determine valid layer indices.")
+        return None
+
+    alphas = cfg.ADV_ALPHA_SWEEP
+    rows = []
+    game = "PrisonersDilemma"
+    opp = "TFT"
+
+    for layer in layers:
+        print(f"  Layer {layer}")
+        for alpha in alphas:
+            coop_rates = []
+            for rep in range(cfg.REPS):
+                r = player.play_game(
+                    game, opp, cfg.EVAL_ROUNDS,
+                    sv=sv, alpha=alpha,
+                    method="sv_at_layer",
+                    target_layer=layer,
+                    label=f"L{layer}_a{alpha}",
+                    verbose=(rep == 0 and alpha == alphas[0]),
+                )
+                coop_rates.append(r["coop_rate"])
+            rows.append({
+                "layer": int(layer),
+                "alpha": float(alpha),
+                "coop_mean": float(np.mean(coop_rates)),
+                "coop_std": float(np.std(coop_rates)),
+            })
+            torch.cuda.empty_cache()
+
+    df = pd.DataFrame(rows)
+    df.to_csv(f"{cfg.OUTPUT_DIR}/layer_alpha_diag.csv", index=False)
+    print("  layer_alpha_diag.csv saved")
+    return df
+
+
+def plot_layer_alpha_diagnostics(df, out):
+    if df is None or df.empty:
+        return
+    layers = sorted(df["layer"].unique())
+    alphas = sorted(df["alpha"].unique())
+    if not layers or not alphas:
+        return
+
+    heat = np.zeros((len(layers), len(alphas)))
+    for i, layer in enumerate(layers):
+        for j, alpha in enumerate(alphas):
+            sub = df[(df["layer"] == layer) & (df["alpha"] == alpha)]
+            heat[i, j] = sub["coop_mean"].mean() if not sub.empty else 0.0
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.heatmap(
+        heat, annot=True, fmt=".2f", cmap="RdYlGn",
+        xticklabels=[f"{a:.2f}" for a in alphas],
+        yticklabels=[str(l) for l in layers],
+        vmin=0, vmax=1, cbar_kws={"label": "Cooperation Rate vs TFT"},
+        ax=ax,
+    )
+    ax.set_xlabel("alpha")
+    ax.set_ylabel("Layer index")
+    ax.set_title("Layer/alpha diagnostics: cooperation vs TFT (Prisoner's Dilemma)",
+                 fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    _save(fig, "layer_alpha_diag.png", out)
+
+
+# ============================================================================
+# MINI-EXPERIMENT 1: DYNAMIC vs STATIC α UNDER ADVERSARIAL PROMPTS
+# ============================================================================
+
+def run_dynamic_vs_static_adversarial(player, sv):
+    cfg = DeepConfig
+    print(f"\n{'='*60}\nMINI-EXP 1: Dynamic vs Static α under adversarial prompts\n{'='*60}")
+    if sv is None:
+        print("  [skip] No primary steering vector available.")
+        return None
+
+    adv_subset = {
+        "betrayal": cfg.ADVERSARIAL_PROMPTS["betrayal"],
+        "dominance": cfg.ADVERSARIAL_PROMPTS["dominance"],
+    }
+    rows = []
+    game = "PrisonersDilemma"
+    opp = "TFT"
+    static_alpha = cfg.BEST_ALPHA_PD
+
+    for adv_name, adv_instr in adv_subset.items():
+        print(f"  Adversarial context: {adv_name}")
+        for rep in range(cfg.REPS):
+            # Adversarial only (no steering)
+            r = player.play_game(
+                game, opp, cfg.EVAL_ROUNDS,
+                extra=adv_instr, label="Adversarial", verbose=(rep == 0)
+            )
+            r["adversarial"] = adv_name
+            r["mode"] = "Adversarial"
+            rows.append(r)
+
+            # Static steering at α = 0.3 (best PD setting)
+            r = player.play_game(
+                game, opp, cfg.EVAL_ROUNDS,
+                sv=sv, alpha=static_alpha, method="sv",
+                extra=adv_instr, label=f"Adv+Static α={static_alpha}",
+                verbose=(rep == 0)
+            )
+            r["adversarial"] = adv_name
+            r["mode"] = "Static"
+            rows.append(r)
+
+            # Dynamic steering (Latent Tit-for-Tat) starting from high α
+            r = player.play_game(
+                game, opp, cfg.EVAL_ROUNDS,
+                sv=sv, alpha=cfg.DYN_ALPHA_HIGH, method="dynamic",
+                extra=adv_instr, label="Adv+Dynamic α_t",
+                verbose=(rep == 0)
+            )
+            r["adversarial"] = adv_name
+            r["mode"] = "Dynamic"
+            rows.append(r)
+        torch.cuda.empty_cache()
+
+    df = pd.DataFrame(rows)
+    df.to_csv(f"{cfg.OUTPUT_DIR}/novel_b_adversarial.csv", index=False)
+    print(f"  novel_b_adversarial.csv saved ({len(df)} rows)")
+    return df
+
+
+def plot_dynamic_vs_static_adversarial(df, out):
+    if df is None or df.empty:
+        return
+    advs = sorted(df["adversarial"].unique())
+    modes = ["Adversarial", "Static", "Dynamic"]
+    fig, axes = plt.subplots(1, len(advs), figsize=(6 * len(advs), 5), sharey=True)
+    if len(advs) == 1:
+        axes = [axes]
+
+    for ai, adv in enumerate(advs):
+        ax = axes[ai]
+        sub = df[df["adversarial"] == adv]
+        means, errs, labels = [], [], []
+        for mode in modes:
+            s = sub[sub["mode"] == mode]
+            if s.empty:
+                continue
+            means.append(s["coop_rate"].mean())
+            errs.append(s["coop_rate"].sem())
+            labels.append(mode)
+        x = np.arange(len(labels))
+        colors = ["#e74c3c", "#3498db", "#2ecc71"]  # adversarial, static, dynamic
+        ax.bar(x, means, yerr=errs, capsize=4,
+               color=colors[:len(labels)], edgecolor="black", linewidth=0.7)
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=20, ha="right")
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_ylabel("Cooperation Rate vs TFT" if ai == 0 else "")
+        ax.set_title(adv, fontsize=12, fontweight="bold")
+        ax.grid(axis="y", alpha=0.3)
+
+    plt.suptitle("Mini-Exp 1: Dynamic vs Static α under adversarial prompts",
+                 fontsize=14, fontweight="bold", y=1.02)
+    plt.tight_layout()
+    _save(fig, "novel_b_adversarial.png", out)
+
+
+# ============================================================================
+# MINI-EXPERIMENT 2: OCE vs LAST-LAYER STEERING AT α ∈ {0.3, 0.5}
+# ============================================================================
+
+def run_oce_vs_last_alpha(player, sv, adv_sv):
+    cfg = DeepConfig
+    print(f"\n{'='*60}\nMINI-EXP 2: OCE vs Last-layer steering at α ∈ {{0.3, 0.5}}\n{'='*60}")
+    if sv is None or adv_sv is None:
+        print("  [skip] Missing cooperative or adversarial vector.")
+        return None
+
+    alphas = [0.3, 0.5]
+    game = "PrisonersDilemma"
+    opp = "TFT"
+    rows = []
+
+    for adv_name, adv_instr in DeepConfig.ADVERSARIAL_PROMPTS.items():
+        print(f"  Adversarial context: {adv_name}")
+        for alpha in alphas:
+            for rep in range(cfg.REPS):
+                # Last-layer steering
+                r = player.play_game(
+                    game, opp, cfg.EVAL_ROUNDS,
+                    sv=sv, alpha=alpha, method="sv",
+                    extra=adv_instr, label=f"LastLayer_a{alpha}",
+                    verbose=(rep == 0 and alpha == alphas[0])
+                )
+                r["adversarial"] = adv_name
+                r["mode"] = "Last"
+                r["alpha"] = alpha
+                rows.append(r)
+
+                # Orthogonal Concept Erasure + steering
+                r = player.play_game(
+                    game, opp, cfg.EVAL_ROUNDS,
+                    sv=sv, adv_sv=adv_sv, alpha=alpha, method="erasure",
+                    extra=adv_instr, label=f"OCE_a{alpha}",
+                    verbose=False
+                )
+                r["adversarial"] = adv_name
+                r["mode"] = "OCE"
+                r["alpha"] = alpha
+                rows.append(r)
+            torch.cuda.empty_cache()
+
+    df = pd.DataFrame(rows)
+    df.to_csv(f"{cfg.OUTPUT_DIR}/novel_c_oce_vs_last.csv", index=False)
+    print(f"  novel_c_oce_vs_last.csv saved ({len(df)} rows)")
+    return df
+
+
+def plot_oce_vs_last_alpha(df, out):
+    if df is None or df.empty:
+        return
+    alphas = sorted(df["alpha"].unique())
+    modes = ["Last", "OCE"]
+    advs = sorted(df["adversarial"].unique())
+
+    fig, axes = plt.subplots(1, len(alphas), figsize=(6 * len(alphas), 5), sharey=True)
+    if len(alphas) == 1:
+        axes = [axes]
+
+    for ai, alpha in enumerate(alphas):
+        ax = axes[ai]
+        sub = df[df["alpha"] == alpha]
+        means = []
+        labels = []
+        for mode in modes:
+            s = sub[sub["mode"] == mode]
+            if s.empty:
+                continue
+            means.append(s["coop_rate"].mean())
+            labels.append(mode)
+        x = np.arange(len(labels))
+        colors = ["#3498db", "#8e44ad"]  # Last, OCE
+        ax.bar(x, means, color=colors[:len(labels)],
+               edgecolor="black", linewidth=0.7)
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=0)
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_title(f"α = {alpha}", fontsize=12, fontweight="bold")
+        ax.grid(axis="y", alpha=0.3)
+        if ai == 0:
+            ax.set_ylabel("Mean cooperation rate vs TFT\n(averaged over adversarial prompts)")
+
+    plt.suptitle("Mini-Exp 2: OCE vs Last-layer steering under adversarial prompts",
+                 fontsize=14, fontweight="bold", y=1.02)
+    plt.tight_layout()
+    _save(fig, "novel_c_oce_vs_last.png", out)
+
+
+# ============================================================================
 # MAIN PIPELINE
 # ============================================================================
 
@@ -1043,7 +1340,8 @@ def run_deep_analysis():
         np.save(f"{out}/sv_computed.npy", sv)
         print(f"  Computed SV: norm={np.linalg.norm(sv):.4f}")
 
-    df_cross = df_robust = df_layers = df_methods = df_ppl = df_control = None
+    df_cross = df_robust = df_layers = df_methods = df_ppl = df_control = df_layer_alpha = None
+    df_dyn_adv = df_oce_last = None
     latent = None
     expected_files = [
         "cross_game_raw.csv", "cross_game_generalization.png",
@@ -1052,6 +1350,9 @@ def run_deep_analysis():
         "method_comparison_raw.csv", "method_comparison.png",
         "ppl_benchmark.csv", "ppl_benchmark.png",
         "control_vector_ablation.csv", "control_vector_ablation.png",
+        "layer_alpha_diag.csv", "layer_alpha_diag.png",
+        "novel_b_adversarial.csv", "novel_b_adversarial.png",
+        "novel_c_oce_vs_last.csv", "novel_c_oce_vs_last.png",
         "deep_analysis_summary.json",
     ]
 
@@ -1109,6 +1410,31 @@ def run_deep_analysis():
         plot_control_vector_ablation(df_control, out)
     except Exception as e:
         print(f"  Module 7 failed: {e}")
+        import traceback; traceback.print_exc()
+    torch.cuda.empty_cache()
+
+    try:
+        df_layer_alpha = run_layer_alpha_diagnostics(player, sv)
+        plot_layer_alpha_diagnostics(df_layer_alpha, out)
+    except Exception as e:
+        print(f"  Module 8 failed: {e}")
+        import traceback; traceback.print_exc()
+    torch.cuda.empty_cache()
+
+    # Mini-experiments (do not affect core modules)
+    try:
+        df_dyn_adv = run_dynamic_vs_static_adversarial(player, sv)
+        plot_dynamic_vs_static_adversarial(df_dyn_adv, out)
+    except Exception as e:
+        print(f"  Mini-Exp 1 failed: {e}")
+        import traceback; traceback.print_exc()
+    torch.cuda.empty_cache()
+
+    try:
+        df_oce_last = run_oce_vs_last_alpha(player, sv, adv_sv)
+        plot_oce_vs_last_alpha(df_oce_last, out)
+    except Exception as e:
+        print(f"  Mini-Exp 2 failed: {e}")
         import traceback; traceback.print_exc()
     torch.cuda.empty_cache()
 
@@ -1182,6 +1508,16 @@ def run_deep_analysis():
         "module_7_control": {
             "random_max_coop": random_max_coop,
             "orthog_max_coop": orthog_max_coop,
+        },
+        "module_8_layer_alpha": {
+            "n_layers_tested": int(len(df_layer_alpha["layer"].unique())) if df_layer_alpha is not None else 0,
+            "n_alphas_tested": int(len(df_layer_alpha["alpha"].unique())) if df_layer_alpha is not None else 0,
+        },
+        "mini_exp_1_dynamic_vs_static": {
+            "included": df_dyn_adv is not None and not df_dyn_adv.empty,
+        },
+        "mini_exp_2_oce_vs_last": {
+            "included": df_oce_last is not None and not df_oce_last.empty,
         },
     }
 
