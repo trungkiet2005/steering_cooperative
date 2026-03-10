@@ -24,7 +24,7 @@ MODEL_REGISTRY = {
         'description':     'Qwen 2.5 32B Instruct (Alibaba)',
     },
     'llama-8b': {
-        'model_id':        'meta-llama/Llama-3.1-8B-Instruct',
+        'model_id':        'unsloth/Meta-Llama-3.1-8B-Instruct',
         'n_layers':        32,
         'hidden_dim':      4096,
         'n_heads':         32,
@@ -33,7 +33,7 @@ MODEL_REGISTRY = {
         'description':     'Llama 3.1 8B Instruct (Meta)',
     },
     'llama-70b': {
-        'model_id':        'meta-llama/Llama-3.1-70B-Instruct',
+        'model_id':        'unsloth/Meta-Llama-3.1-70B-Instruct',
         'n_layers':        80,
         'hidden_dim':      8192,
         'n_heads':         64,
@@ -51,7 +51,7 @@ MODEL_REGISTRY = {
         'description':     'Mistral 7B Instruct v0.3 (Mistral AI)',
     },
     'gemma-27b': {
-        'model_id':        'google/gemma-2-27b-it',
+        'model_id':        'unsloth/gemma-2-27b-it',
         'n_layers':        46,
         'hidden_dim':      4608,
         'n_heads':         32,
