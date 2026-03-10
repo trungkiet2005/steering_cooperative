@@ -43,6 +43,32 @@ class SteeringLLMPlayer:
         cfg: SteeringConfig instance (determines which model to load).
     """
 
+    @staticmethod
+    def _resolve_hf_token():
+        """Resolve HuggingFace token from environment or Kaggle secrets."""
+        import os
+        # 1. Explicit environment variable
+        token = os.environ.get('HF_TOKEN') or os.environ.get('HUGGING_FACE_HUB_TOKEN')
+        if token:
+            return token
+        # 2. Kaggle secrets (UserSecretsClient)
+        try:
+            from kaggle_secrets import UserSecretsClient
+            token = UserSecretsClient().get_secret("HF_TOKEN")
+            if token:
+                return token
+        except Exception:
+            pass
+        # 3. huggingface-cli login (cached token)
+        try:
+            from huggingface_hub import HfFolder
+            token = HfFolder.get_token()
+            if token:
+                return token
+        except Exception:
+            pass
+        return None
+
     def __init__(self, cfg: SteeringConfig):
         self.cfg = cfg
         self.device = cfg.DEVICE
@@ -53,8 +79,16 @@ class SteeringLLMPlayer:
         print(f"  Quantisation: {cfg.QUANT_METHOD}  |  Layers: {cfg.N_LAYERS}")
         print(f"{'='*60}\n")
 
+        # Resolve HF token for gated models (e.g. Llama, Gemma)
+        hf_token = self._resolve_hf_token()
+        if hf_token:
+            print("  ✓ HF token found")
+        else:
+            print("  ⚠ No HF token — gated models (Llama, Gemma) will fail.")
+            print("    Set HF_TOKEN env var or add it as a Kaggle secret.")
+
         self.tokenizer = AutoTokenizer.from_pretrained(
-            cfg.MODEL_ID, trust_remote_code=True)
+            cfg.MODEL_ID, trust_remote_code=True, token=hf_token)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -64,7 +98,7 @@ class SteeringLLMPlayer:
                 self.model = AutoModelForCausalLM.from_pretrained(
                     cfg.MODEL_ID, torch_dtype=torch.float16,
                     device_map="auto", trust_remote_code=True,
-                    output_hidden_states=True)
+                    output_hidden_states=True, token=hf_token)
             else:
                 # NF4/FP4 via bitsandbytes
                 qcfg = BitsAndBytesConfig(
@@ -76,12 +110,13 @@ class SteeringLLMPlayer:
                 self.model = AutoModelForCausalLM.from_pretrained(
                     cfg.MODEL_ID, quantization_config=qcfg,
                     device_map="auto", trust_remote_code=True,
-                    output_hidden_states=True)
+                    output_hidden_states=True, token=hf_token)
         else:
             dtype = torch.float16 if self.device == "cuda" else torch.float32
             self.model = AutoModelForCausalLM.from_pretrained(
                 cfg.MODEL_ID, torch_dtype=dtype, device_map="auto",
-                trust_remote_code=True, output_hidden_states=True)
+                trust_remote_code=True, output_hidden_states=True,
+                token=hf_token)
 
         self.model.eval()
         self.n_layers = (
