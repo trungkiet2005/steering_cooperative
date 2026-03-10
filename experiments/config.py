@@ -19,7 +19,7 @@ MODEL_REGISTRY = {
         'n_layers':        64,
         'hidden_dim':      5120,
         'n_heads':         40,
-        'strategic_layer': 57,
+        'strategic_layer': 59,
         'quant':           'nf4',
         'description':     'Qwen 2.5 32B Instruct (Alibaba)',
     },
