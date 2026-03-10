@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.3)  9 MAR 2026 10:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.3)  10 MAR 2026 08:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -336,11 +336,28 @@ LaTeX Info: Redefining \] on input line 2951.
 y
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
 )
+(C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/amscls\amsthm.sty
+Package: amsthm 2020/05/29 v2.20.6
+\thm@style=\toks28
+\thm@bodyfont=\toks29
+\thm@headfont=\toks30
+\thm@notefont=\toks31
+\thm@headpunct=\toks32
+\thm@preskip=\skip59
+\thm@postskip=\skip60
+\thm@headsep=\skip61
+\dth@everypar=\toks33
+)
+\c@assumption=\count315
+\c@proposition=\count316
+\c@corollary=\count317
+\c@remark=\count318
+
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/units\nicefrac.sty
 Package: nicefrac 1998/08/04 v0.9b Nice fractions
-\L@UnitsRaiseDisplaystyle=\skip59
-\L@UnitsRaiseTextstyle=\skip60
-\L@UnitsRaiseScriptstyle=\skip61
+\L@UnitsRaiseDisplaystyle=\skip62
+\L@UnitsRaiseTextstyle=\skip63
+\L@UnitsRaiseScriptstyle=\skip64
 
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
 Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
@@ -348,18 +365,18 @@ Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype
 .sty
 Package: microtype 2025/07/09 v3.2b Micro-typographical refinements (RS)
-\MT@toks=\toks28
+\MT@toks=\toks34
 \MT@tempbox=\box55
-\MT@count=\count315
+\MT@count=\count319
 LaTeX Info: Redefining \noprotrusionifhmode on input line 1087.
 LaTeX Info: Redefining \leftprotrusion on input line 1088.
-\MT@prot@toks=\toks29
+\MT@prot@toks=\toks35
 LaTeX Info: Redefining \rightprotrusion on input line 1107.
 LaTeX Info: Redefining \textls on input line 1449.
 \MT@outer@kern=\dimen183
 LaTeX Info: Redefining \microtypecontext on input line 2053.
 LaTeX Info: Redefining \textmicrotypecontext on input line 2070.
-\MT@listname@count=\count316
+\MT@listname@count=\count320
 
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype
 -pdftex.def
@@ -367,7 +384,7 @@ File: microtype-pdftex.def 2025/07/09 v3.2b Definitions specific to pdftex (RS)
 
 LaTeX Info: Redefining \lsstyle on input line 944.
 LaTeX Info: Redefining \lslig on input line 944.
-\MT@outer@space=\skip62
+\MT@outer@space=\skip65
 )
 Package microtype Info: Loading configuration file microtype.cfg.
 
@@ -442,14 +459,14 @@ Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
 \caption@hangindent=\dimen193
 Package caption Info: Standard document class detected.
 )
-\c@caption@flags=\count317
-\c@continuedfloat=\count318
+\c@caption@flags=\count321
+\c@continuedfloat=\count322
 Package caption Info: hyperref package is loaded.
 )
 Package caption Info: New subtype `subfigure' on input line 238.
-\c@subfigure=\count319
+\c@subfigure=\count323
 Package caption Info: New subtype `subtable' on input line 238.
-\c@subtable=\count320
+\c@subtable=\count324
 )
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorith
 m.sty
@@ -458,31 +475,31 @@ nment
 
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count321
-\float@exts=\toks30
+\c@float@type=\count325
+\float@exts=\toks36
 \float@box=\box56
-\@float@everytoks=\toks31
+\@float@everytoks=\toks37
 \@floatcapt=\box57
 )
-\@float@every@algorithm=\toks32
-\c@algorithm=\count322
+\@float@every@algorithm=\toks38
+\c@algorithm=\count326
 )
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorith
 mic.sty
 Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
-\c@ALC@unique=\count323
-\c@ALC@line=\count324
-\c@ALC@rem=\count325
-\c@ALC@depth=\count326
-\ALC@tlm=\skip63
-\algorithmicindent=\skip64
+\c@ALC@unique=\count327
+\c@ALC@line=\count328
+\c@ALC@rem=\count329
+\c@ALC@depth=\count330
+\ALC@tlm=\skip66
+\algorithmicindent=\skip67
 )
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.s
 ty
 Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
-\multirow@colwidth=\skip65
-\multirow@cntb=\count327
-\multirow@dima=\skip66
+\multirow@colwidth=\skip68
+\multirow@cntb=\count331
+\multirow@dima=\skip69
 \bigstrutjot=\dimen194
 )
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/colortbl\colortbl.s
@@ -493,40 +510,44 @@ Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
 \col@sep=\dimen195
 \ar@mcellbox=\box58
 \extrarowheight=\dimen196
-\NC@list=\toks33
-\extratabsurround=\skip67
-\backup@length=\skip68
+\NC@list=\toks39
+\extratabsurround=\skip70
+\backup@length=\skip71
 \ar@cellbox=\box59
 )
-\everycr=\toks34
-\minrowclearance=\skip69
-\rownum=\count328
+\everycr=\toks40
+\minrowclearance=\skip72
+\rownum=\count332
 )
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend
 -pdftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count329
-) (neurips_2024.aux)
+\l__color_backend_stack_int=\count333
+) (neurips_2024.aux
+
+Package natbib Warning: Citation `dubey2024llama3' multiply defined.
+
+)
 \openout1 = `neurips_2024.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -594,21 +615,21 @@ LaTeX Font Info:    ... okay on input line 46.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-Package hyperref Info: Link coloring OFF on input line 46.
+Package hyperref Info: Link coloring OFF on input line 51.
 (neurips_2024.out) (neurips_2024.out)
 \@outlinefile=\write3
 \openout3 = `neurips_2024.out'.
 
-LaTeX Info: Redefining \microtypecontext on input line 46.
-Package microtype Info: Applying patch `item' on input line 46.
-Package microtype Info: Applying patch `toc' on input line 46.
-Package microtype Info: Applying patch `eqnum' on input line 46.
+LaTeX Info: Redefining \microtypecontext on input line 51.
+Package microtype Info: Applying patch `item' on input line 51.
+Package microtype Info: Applying patch `toc' on input line 51.
+Package microtype Info: Applying patch `eqnum' on input line 51.
 
 
-Package microtype Warning: Unable to apply patch `footnote' on input line 46.
+Package microtype Warning: Unable to apply patch `footnote' on input line 51.
 
-Package microtype Info: Applying patch `verbatim' on input line 46.
-LaTeX Info: Redefining \microtypesetup on input line 46.
+Package microtype Info: Applying patch `verbatim' on input line 51.
+LaTeX Info: Redefining \microtypesetup on input line 51.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -627,17 +648,17 @@ File: mt-ptm.cfg 2006/04/20 v1.7 microtype config. file: Times (RS)
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pd
 f.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count330
+\scratchcounter=\count334
 \scratchdimen=\dimen197
 \scratchbox=\box60
-\nofMPsegments=\count331
-\nofMParguments=\count332
-\everyMPshowfont=\toks35
-\MPscratchCnt=\count333
+\nofMPsegments=\count335
+\nofMParguments=\count336
+\everyMPshowfont=\toks41
+\MPscratchCnt=\count337
 \MPscratchDim=\dimen198
-\MPnumerator=\count334
-\makeMPintoPDFobject=\count335
-\everyMPtoPDFconversion=\toks36
+\MPnumerator=\count338
+\makeMPintoPDFobject=\count339
+\everyMPtoPDFconversion=\toks42
 )
 (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstop
 df-base.sty
@@ -658,7 +679,7 @@ g
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 49.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 54.
 
  (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -667,7 +688,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 g
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 49.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 54.
 
  (C:\Users\DELL 3450\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -685,91 +706,168 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 {C:/Users/DELL 3450/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/
 DELL 3450/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}]
-[2] [3]
+[2]
+Underfull \vbox (badness 2229) has occurred while \output is active []
+
+ [3]
+[4]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 141.
- [4]
-<latent_space.png, id=213, 998.7714pt x 883.1394pt>
+put line 181.
+ [5] [6] [7]
+<latent_space.png, id=339, 998.7714pt x 883.1394pt>
 File: latent_space.png Graphic file (type png)
 <use latent_space.png>
-Package pdftex.def Info: latent_space.png  used on input line 194.
+Package pdftex.def Info: latent_space.png  used on input line 348.
 (pdftex.def)             Requested size: 357.73405pt x 316.31287pt.
- [5 <./latent_space.png>]
-<layer_localization.png, id=223, 1146.9249pt x 421.575pt>
+
+Underfull \vbox (badness 3417) has occurred while \output is active []
+
+ [8 <./latent_space.png>]
+<layer_localization.png, id=351, 1146.9249pt x 421.575pt>
 File: layer_localization.png Graphic file (type png)
 <use layer_localization.png>
-Package pdftex.def Info: layer_localization.png  used on input line 216.
+Package pdftex.def Info: layer_localization.png  used on input line 370.
 (pdftex.def)             Requested size: 357.73405pt x 131.49098pt.
- [6 <./layer_localization.png>]
-<robustness_heatmap.png, id=238, 660.3069pt x 349.305pt>
-File: robustness_heatmap.png Graphic file (type png)
-<use robustness_heatmap.png>
-Package pdftex.def Info: robustness_heatmap.png  used on input line 321.
-(pdftex.def)             Requested size: 337.86465pt x 178.7348pt.
+<alpha_sweep.png, id=354, 855.6768pt x 421.3341pt>
+File: alpha_sweep.png Graphic file (type png)
+<use alpha_sweep.png>
+Package pdftex.def Info: alpha_sweep.png  used on input line 416.
+(pdftex.def)             Requested size: 337.86465pt x 166.36406pt.
+ [9 <./layer_localization.png>]
+<method_comparison_deep.png, id=366, 854.59274pt x 419.52734pt>
+File: method_comparison_deep.png Graphic file (type png)
+<use method_comparison_deep.png>
+Package pdftex.def Info: method_comparison_deep.png  used on input line 456.
+(pdftex.def)             Requested size: 337.86465pt x 165.86191pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<ppl_benchmark.png, id=367, 999.13275pt x 349.42545pt>
+File: ppl_benchmark.png Graphic file (type png)
+<use ppl_benchmark.png>
+Package pdftex.def Info: ppl_benchmark.png  used on input line 465.
+(pdftex.def)             Requested size: 337.86465pt x 118.15793pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[10 <./alpha_sweep.png>]
+<control_vector_ablation.png, id=377, 854.59274pt x 419.52734pt>
+File: control_vector_ablation.png Graphic file (type png)
+<use control_vector_ablation.png>
+Package pdftex.def Info: control_vector_ablation.png  used on input line 474.
+(pdftex.def)             Requested size: 337.86465pt x 165.86191pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[11 <./method_comparison_deep.png>]
+<adversarial_alpha_sweep.png, id=387, 1143.67274pt x 729.2043pt>
+File: adversarial_alpha_sweep.png Graphic file (type png)
+<use adversarial_alpha_sweep.png>
+Package pdftex.def Info: adversarial_alpha_sweep.png  used on input line 510.
+(pdftex.def)             Requested size: 377.60951pt x 240.76056pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<novel_c_oce_vs_last.png, id=391, 853.5087pt x 368.93835pt>
+File: novel_c_oce_vs_last.png Graphic file (type png)
+<use novel_c_oce_vs_last.png>
+Package pdftex.def Info: novel_c_oce_vs_last.png  used on input line 519.
+(pdftex.def)             Requested size: 337.86465pt x 146.04149pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[12 <./ppl_benchmark.png> <./control_vector_ablation.png>] [13 <./adversarial_a
+lpha_sweep.png>] [14 <./novel_c_oce_vs_last.png>] [15] [16
+pdfTeX warning (ext4): destination with the same identifier (name{cite.dubey202
+4llama3}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.723 ...tem[Sprejer et~al.(2026)]{sprejer2026gap}
+                                                  ] [17]
+<novel_a_layer_comparison.png, id=467, 1144.0341pt x 442.65375pt>
+File: novel_a_layer_comparison.png Graphic file (type png)
+<use novel_a_layer_comparison.png>
+Package pdftex.def Info: novel_a_layer_comparison.png  used on input line 793.
+(pdftex.def)             Requested size: 337.86465pt x 130.72356pt.
+<novel_b_adversarial.png, id=469, 854.59274pt x 368.93835pt>
+File: novel_b_adversarial.png Graphic file (type png)
+<use novel_b_adversarial.png>
+Package pdftex.def Info: novel_b_adversarial.png  used on input line 805.
+(pdftex.def)             Requested size: 337.86465pt x 145.86134pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \vbox (badness 2941) has occurred while \output is active []
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 810.
 
- [7]
-Underfull \vbox (badness 4254) has occurred while \output is active []
 
- [8 <./robustness_heatmap.png>] [9] [10] [11] [12] [13] (neurips_2024.aux)
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\times' on input line 810.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 810.
+
+[18 <./novel_a_layer_comparison.png>]
+<layer_alpha_diag.png, id=480, 792.8019pt x 419.52734pt>
+File: layer_alpha_diag.png Graphic file (type png)
+<use layer_alpha_diag.png>
+Package pdftex.def Info: layer_alpha_diag.png  used on input line 817.
+(pdftex.def)             Requested size: 337.86465pt x 178.78647pt.
+ [19 <./novel_b_adversarial.png> <./layer_alpha_diag.png>] [20]
+
+Package natbib Warning: There were multiply defined citations.
+
+[21] (neurips_2024.aux
+
+Package natbib Warning: Citation(s) may have changed.
+(natbib)                Rerun to get citations correct.
+
+)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `neurips_2024.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `neurips_2024.out':
-(rerunfilecheck)             Before: ABE5F6EE1CB48C0DE6464BDFE41C1DE9;3294
-(rerunfilecheck)             After:  7599891F4E92106764DD92D42B765E90;3276.
+Package rerunfilecheck Info: File `neurips_2024.out' has not changed.
+(rerunfilecheck)             Checksum: 444A06A16CBF1EB26BEAD5CDB4891709;5353.
  ) 
 Here is how much of TeX's memory you used:
- 15965 strings out of 467867
- 254212 string characters out of 5416363
- 706415 words of memory out of 5000000
- 44221 multiletter control sequences out of 15000+600000
- 678013 words of font info for 277 fonts, out of 8000000 for 9000
+ 16419 strings out of 467867
+ 261574 string characters out of 5416363
+ 712719 words of memory out of 5000000
+ 44479 multiletter control sequences out of 15000+600000
+ 695446 words of font info for 365 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,1971b,633s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{equation.3.1} has been referenced but does not exis
-t, replaced by a fixed one
-
- <C:\Users\DELL 3450\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ec
-tt1000.pk><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/
-amsfonts/cm/cmbx10.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/DELL 3450/AppData/Local/Programs/M
-iKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/DELL 3450/AppData/Loc
-al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/DELL 345
-0/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Us
-ers/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi
-9.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
-onts/cm/cmr10.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1
-/public/amsfonts/cm/cmr7.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/
-fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/DELL 3450/AppData/Local/Progr
-ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/DELL 3450/AppDat
-a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/DELL
- 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C
-:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
-cmsy9.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/
-amsfonts/symbols/msbm10.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/f
-onts/type1/urw/times/utmb8a.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKT
-eX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/DELL 3450/AppData/Local/Programs/
-MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on neurips_2024.pdf (13 pages, 1194081 bytes).
+ 75i,12n,79p,1905b,655s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\DELL 3450\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\
+ectt1000.pk><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/publi
+c/amsfonts/cm/cmbx9.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts
+/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/DELL 3450/AppData/Local/Programs
+/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/DELL 3450/AppData/L
+ocal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/DELL 34
+50/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/U
+sers/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
+10.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmr7.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmr9.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/
+fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/DELL 3450/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/DELL 3450/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/DEL
+L 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><
+C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/sy
+mbols/msbm10.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/type1/
+urw/times/utmb8a.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fonts/ty
+pe1/urw/times/utmbi8a.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX/fon
+ts/type1/urw/times/utmr8a.pfb><C:/Users/DELL 3450/AppData/Local/Programs/MiKTeX
+/fonts/type1/urw/times/utmri8a.pfb>
+Output written on neurips_2024.pdf (21 pages, 2185285 bytes).
 PDF statistics:
- 449 PDF objects out of 1000 (max. 8388607)
- 109 named destinations out of 1000 (max. 500000)
- 48800 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 661 PDF objects out of 1000 (max. 8388607)
+ 169 named destinations out of 1000 (max. 500000)
+ 63248 words of extra memory for PDF output out of 74296 (max. 10000000)
 

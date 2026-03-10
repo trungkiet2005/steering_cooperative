@@ -79,6 +79,35 @@ class SteeringConfig:
     HEAD_DIM           = HIDDEN_DIM // N_HEADS   # 128
     STRATEGIC_LAYER    = 57   # peak Fisher Discriminability layer (verified)
 
+    # ── Multi-model registry (for cross-architecture experiments) ──
+    MODEL_REGISTRY = {
+        'qwen-32b': {
+            'model_id': 'Qwen/Qwen2.5-32B-Instruct',
+            'n_layers': 64, 'hidden_dim': 5120, 'n_heads': 40,
+            'strategic_layer': 57, 'quant': 'awq',
+        },
+        'llama-8b': {
+            'model_id': 'meta-llama/Llama-3.1-8B-Instruct',
+            'n_layers': 32, 'hidden_dim': 4096, 'n_heads': 32,
+            'strategic_layer': 27, 'quant': 'nf4',
+        },
+        'llama-70b': {
+            'model_id': 'meta-llama/Llama-3.1-70B-Instruct',
+            'n_layers': 80, 'hidden_dim': 8192, 'n_heads': 64,
+            'strategic_layer': 68, 'quant': 'awq',
+        },
+        'mistral-7b': {
+            'model_id': 'mistralai/Mistral-7B-Instruct-v0.3',
+            'n_layers': 32, 'hidden_dim': 4096, 'n_heads': 32,
+            'strategic_layer': 27, 'quant': 'nf4',
+        },
+        'gemma-27b': {
+            'model_id': 'google/gemma-2-27b-it',
+            'n_layers': 46, 'hidden_dim': 4608, 'n_heads': 32,
+            'strategic_layer': 39, 'quant': 'awq',
+        },
+    }
+
     # ── Steering settings ──
     ALPHA_SWEEP = [-2.0, -1.0, -0.5, -0.2, -0.1,
                    0.0,
@@ -1288,7 +1317,7 @@ def run_all_experiments():
 
             # Adversarial + Erasure + Steered (new method)
             r = player.play_game('TFT', cfg.EVAL_ROUNDS,
-                                  sv=primary_sv, adv=adv_sv, alpha=test_alpha_c,
+                                  sv=primary_sv, adv_sv=adv_sv, alpha=test_alpha_c,
                                   method='erasure', instruction=adv_instr,
                                   label='Adversarial+Erasure+Steered',
                                   verbose=(g == 0))
@@ -1422,8 +1451,569 @@ def run_all_experiments():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# REVIEWER RESPONSE EXPERIMENT B1: STANDARD PERPLEXITY BENCHMARK
+# ─────────────────────────────────────────────────────────────────────────────
+
+def compute_perplexity_standard(player: SteeringLLMPlayer, svs: dict,
+                                 out_dir: str,
+                                 dataset_name: str = "wikitext",
+                                 n_samples: int = 100,
+                                 max_length: int = 512):
+    """Compute perplexity on WikiText-2 (or equivalent) for baseline and steered models.
+
+    Addresses reviewer concern: 'PPL on 10 sentences is inadequate.
+    Please evaluate on standard corpora (WikiText-103, PTB, LAMBADA).'
+
+    Args:
+        player: SteeringLLMPlayer with loaded model
+        svs: dict mapping layer_index -> steering vector (numpy)
+        out_dir: output directory for results
+        dataset_name: HuggingFace dataset name
+        n_samples: number of text samples to evaluate
+        max_length: max token length per sample
+    """
+    from datasets import load_dataset
+    import math
+
+    print(f"\n{'='*60}")
+    print(f"B1: Standard Perplexity Benchmark ({dataset_name})")
+    print(f"{'='*60}\n")
+
+    # Load dataset
+    try:
+        ds = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+    except Exception:
+        print("  WikiText-2 not available, trying wikitext-103...")
+        ds = load_dataset("wikitext", "wikitext-103-raw-v1", split="test")
+
+    # Filter non-empty, non-header lines
+    texts = [t for t in ds['text'] if len(t.strip()) > 50 and not t.startswith(' = ')]
+    texts = texts[:n_samples]
+    print(f"  Using {len(texts)} text samples")
+
+    sv = svs.get(-1, svs.get(list(svs.keys())[0]))  # last-layer SV
+
+    alphas_to_test = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
+    methods = ['baseline', 'sv', 'caa', 'repe']
+    results = []
+
+    for method in methods:
+        for alpha in alphas_to_test:
+            if method == 'baseline' and alpha > 0.0:
+                continue  # baseline only needs alpha=0
+
+            nlls = []
+            n_tokens_total = 0
+
+            for text in tqdm(texts, desc=f"  PPL {method} α={alpha}", leave=False):
+                inputs = player.tokenizer(text, return_tensors="pt",
+                                          truncation=True, max_length=max_length)
+                input_ids = inputs['input_ids'].to(player.device)
+                n_tok = input_ids.shape[1]
+
+                if n_tok < 2:
+                    continue
+
+                with torch.no_grad():
+                    if method == 'baseline' or alpha == 0.0:
+                        out = player.model(input_ids=input_ids, labels=input_ids)
+                        loss = out.loss.item()
+                    else:
+                        # Forward with steering
+                        sv_t = torch.tensor(sv, dtype=torch.float16,
+                                            device=player.device)
+                        out = player.model(input_ids=input_ids,
+                                           output_hidden_states=True)
+                        h = out.hidden_states[-1].clone()
+
+                        if method == 'sv':
+                            h[:, -1, :] += alpha * sv_t.to(h.dtype)
+                        elif method == 'caa':
+                            h += alpha * sv_t.to(h.dtype)
+                        elif method == 'repe':
+                            d_hat = sv / (np.linalg.norm(sv) + 1e-8)
+                            d_t = torch.tensor(d_hat, dtype=torch.float16,
+                                               device=player.device)
+                            proj = (h * d_t).sum(dim=-1, keepdim=True)
+                            h = h + alpha * proj * d_t
+
+                        logits = player.model.lm_head(h)
+                        shift_logits = logits[:, :-1, :].contiguous()
+                        shift_labels = input_ids[:, 1:].contiguous()
+                        loss_fn = torch.nn.CrossEntropyLoss()
+                        loss = loss_fn(shift_logits.view(-1, shift_logits.size(-1)),
+                                       shift_labels.view(-1)).item()
+
+                    nlls.append(loss * (n_tok - 1))
+                    n_tokens_total += (n_tok - 1)
+
+                if len(nlls) % 20 == 0:
+                    torch.cuda.empty_cache()
+
+            ppl = math.exp(sum(nlls) / n_tokens_total) if n_tokens_total > 0 else float('inf')
+            results.append({
+                'method': method,
+                'alpha': alpha,
+                'ppl': ppl,
+                'n_tokens': n_tokens_total,
+                'n_samples': len(nlls),
+            })
+            print(f"    {method} α={alpha}: PPL = {ppl:.2f} ({n_tokens_total} tokens)")
+
+    df_ppl = pd.DataFrame(results)
+
+    # Compute ratios
+    baseline_ppl = df_ppl[df_ppl['method'] == 'baseline']['ppl'].values[0]
+    df_ppl['ppl_ratio'] = df_ppl['ppl'] / baseline_ppl
+
+    df_ppl.to_csv(f"{out_dir}/ppl_wikitext_benchmark.csv", index=False)
+
+    # Plot
+    fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+    for method in ['sv', 'caa', 'repe']:
+        sub = df_ppl[df_ppl['method'] == method]
+        ax.plot(sub['alpha'], sub['ppl_ratio'], 'o-', label=method.upper(), linewidth=2)
+    ax.axhline(y=1.0, color='gray', linestyle='--', alpha=0.5, label='Baseline')
+    ax.axhline(y=1.05, color='red', linestyle=':', alpha=0.5, label='5% threshold')
+    ax.set_xlabel('α', fontsize=14)
+    ax.set_ylabel('PPL / PPL_baseline', fontsize=14)
+    ax.set_title(f'Perplexity Ratio on WikiText-2 (N={len(texts)} samples)', fontsize=14)
+    ax.legend(fontsize=12)
+    ax.set_ylim(0.95, 1.15)
+    plt.tight_layout()
+    plt.savefig(f"{out_dir}/ppl_wikitext_benchmark.png", dpi=150)
+    plt.close()
+
+    print(f"\n  ✓ WikiText PPL benchmark saved to {out_dir}/ppl_wikitext_benchmark.csv")
+    return df_ppl
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REVIEWER RESPONSE EXPERIMENT B2: SEMANTIC INVARIANCE TEST
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_semantic_invariance_test(player: SteeringLLMPlayer, sv: np.ndarray,
+                                  out_dir: str,
+                                  n_rounds: int = 30, n_reps: int = 3):
+    """Test steering with obfuscated action labels (X/Y instead of C/D).
+
+    Addresses reviewer concern: 'Randomize action labels (Option X/Y)
+    to rule out lexical priming.'
+
+    Uses 'X' and 'Y' as action labels, re-maps the logit-space decoding
+    to these tokens, and tests whether steering still induces 'X' (=Cooperate).
+    """
+    print(f"\n{'='*60}")
+    print("B2: Semantic Invariance Test (X/Y labels)")
+    print(f"{'='*60}\n")
+
+    # Get token IDs for X and Y
+    x_id = player.tokenizer.encode('X', add_special_tokens=False)[0]
+    y_id = player.tokenizer.encode('Y', add_special_tokens=False)[0]
+
+    def decode_xy(logits):
+        """Pick X or Y from logits with temperature sampling."""
+        x_l, y_l = logits[x_id].item(), logits[y_id].item()
+        if SteeringConfig.TEMPERATURE <= 0:
+            return 'X' if x_l >= y_l else 'Y'
+        rl = torch.tensor([x_l, y_l], device=player.device)
+        probs = torch.softmax(rl / SteeringConfig.TEMPERATURE, dim=0)
+        return 'X' if torch.multinomial(probs, 1).item() == 0 else 'Y'
+
+    def make_xy_prompt(history, instruction="", opp_last=None):
+        """Game prompt with X/Y labels instead of C/D."""
+        prompt = (
+            "You are playing a two-player strategic game. "
+            "In each round:\n"
+            "- Choose X or Y\n"
+            "- Payoffs: Both X = 3 pts, Both Y = 1 pt, "
+            "X vs Y = 0 pts for X and 5 pts for Y\n"
+            f"{instruction}\n"
+        )
+        if history:
+            prompt += "Game History (last 5 rounds):\n"
+            window = history[-5:]
+            start = len(history) - len(window) + 1
+            for i, (m, o) in enumerate(window):
+                prompt += f"Round {start+i}: You={m}, Opponent={o}\n"
+        if opp_last:
+            prompt += f"\nOpponent's last move: {opp_last}\n"
+        prompt += "\nYour move (respond with only X or Y): "
+        return prompt
+
+    alphas_to_test = [0.0, 0.05, 0.1, 0.2, 0.3, 0.5]
+    opponents = ['TFT', 'AllC', 'AllD']
+    results = []
+
+    sv_t = torch.tensor(sv, dtype=torch.float16, device=player.device)
+
+    for alpha in alphas_to_test:
+        for opp in opponents:
+            for rep in range(n_reps):
+                history = []
+                opp_last = None
+                actions = []
+
+                for rnd in range(n_rounds):
+                    prompt = make_xy_prompt(history, opp_last=opp_last)
+                    inputs = player._encode(prompt)
+
+                    with torch.no_grad():
+                        if alpha == 0.0:
+                            out = player.model(**inputs)
+                            action = decode_xy(out.logits[0, -1, :])
+                        else:
+                            out = player.model(**inputs, output_hidden_states=True)
+                            h = out.hidden_states[-1].clone()
+                            h[:, -1, :] += alpha * sv_t.to(h.dtype)
+                            logits = player.model.lm_head(h)
+                            action = decode_xy(logits[0, -1, :])
+
+                    actions.append(action)
+
+                    # Map X->C, Y->D for opponent strategy
+                    mapped = 'C' if action == 'X' else 'D'
+                    opp_action_cd = get_opponent_action(opp, [(m, o) for m, o in
+                        [('C' if a == 'X' else 'D',
+                          'C' if b == 'X' else 'D') for a, b in history]], mapped)
+                    opp_action = 'X' if opp_action_cd == 'C' else 'Y'
+
+                    history.append((action, opp_action))
+                    opp_last = opp_action
+
+                coop_rate = sum(1 for a in actions if a == 'X') / len(actions)
+                results.append({
+                    'label_scheme': 'X/Y',
+                    'alpha': alpha,
+                    'opponent': opp,
+                    'rep': rep,
+                    'coop_rate': coop_rate,
+                    'action_sequence': ''.join(actions),
+                })
+                print(f"  α={alpha} vs {opp} rep{rep}: "
+                      f"X-rate={coop_rate:.1%} ({sum(1 for a in actions if a=='X')}/{n_rounds})")
+
+                torch.cuda.empty_cache()
+
+    df_inv = pd.DataFrame(results)
+    df_inv.to_csv(f"{out_dir}/semantic_invariance_test.csv", index=False)
+
+    # Summary plot
+    fig, axes = plt.subplots(1, len(opponents), figsize=(5*len(opponents), 5), sharey=True)
+    for i, opp in enumerate(opponents):
+        sub = df_inv[df_inv['opponent'] == opp]
+        agg = sub.groupby('alpha')['coop_rate'].agg(['mean', 'std']).reset_index()
+        axes[i].errorbar(agg['alpha'], agg['mean'], yerr=agg['std'],
+                         fmt='o-', color='purple', linewidth=2, capsize=5)
+        axes[i].set_title(f'vs {opp}', fontsize=14)
+        axes[i].set_xlabel('α', fontsize=12)
+        axes[i].set_ylim(-0.05, 1.05)
+        axes[i].axhline(y=0.5, color='gray', linestyle='--', alpha=0.3)
+        if i == 0:
+            axes[i].set_ylabel('X-rate (=Cooperation)', fontsize=12)
+    fig.suptitle('Semantic Invariance: X/Y Labels (no "Cooperate"/"Defect" words)',
+                 fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig(f"{out_dir}/semantic_invariance_test.png", dpi=150)
+    plt.close()
+
+    print(f"\n  ✓ Semantic invariance test saved to {out_dir}/semantic_invariance_test.csv")
+    return df_inv
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REVIEWER RESPONSE EXPERIMENT B3: CROSS-LINGUAL STEERING
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_crosslingual_steering_test(player: SteeringLLMPlayer, sv: np.ndarray,
+                                    out_dir: str,
+                                    n_rounds: int = 30, n_reps: int = 3):
+    """Test whether English-extracted steering vectors transfer to non-English
+    game prompts (Vietnamese, Chinese, Japanese).
+
+    Addresses future direction: 'Cross-lingual steering: testing whether
+    English-extracted cooperation vectors transfer to non-English game prompts.'
+    """
+    print(f"\n{'='*60}")
+    print("B3: Cross-Lingual Steering Test")
+    print(f"{'='*60}\n")
+
+    # Multilingual prompt templates
+    LANG_PROMPTS = {
+        'en': {
+            'intro': ("You are playing the Iterated Prisoner's Dilemma game. "
+                      "In each round:\n- Choose C (Cooperate) or D (Defect)\n"
+                      "- Payoffs: Both C = 3 pts, Both D = 1 pt, "
+                      "C vs D = 0 pts for C and 5 pts for D\n"),
+            'history': "Game History (last 5 rounds):\n",
+            'round': "Round {i}: You={m}, Opponent={o}\n",
+            'opp': "\nOpponent's last move: {opp}\n",
+            'ask': "\nYour move (respond with only C or D): ",
+        },
+        'vi': {
+            'intro': ("Bạn đang chơi trò Tình huống Tù nhân lặp lại. "
+                      "Mỗi lượt:\n- Chọn C (Hợp tác) hoặc D (Phản bội)\n"
+                      "- Điểm: Cả hai C = 3 điểm, Cả hai D = 1 điểm, "
+                      "C vs D = 0 điểm cho C và 5 điểm cho D\n"),
+            'history': "Lịch sử trò chơi (5 lượt gần nhất):\n",
+            'round': "Lượt {i}: Bạn={m}, Đối thủ={o}\n",
+            'opp': "\nNước đi gần nhất của đối thủ: {opp}\n",
+            'ask': "\nNước đi của bạn (chỉ trả lời C hoặc D): ",
+        },
+        'zh': {
+            'intro': ("你正在玩迭代囚徒困境游戏。"
+                      "每一轮：\n- 选择 C（合作）或 D（背叛）\n"
+                      "- 得分：双方C = 3分，双方D = 1分，"
+                      "C对D = C得0分、D得5分\n"),
+            'history': "游戏历史（最近5轮）：\n",
+            'round': "第{i}轮：你={m}，对手={o}\n",
+            'opp': "\n对手上一轮的选择：{opp}\n",
+            'ask': "\n你的选择（仅回答C或D）：",
+        },
+        'ja': {
+            'intro': ("あなたは繰り返し囚人のジレンマゲームをプレイしています。"
+                      "各ラウンド：\n- C（協力）またはD（裏切り）を選択\n"
+                      "- 得点：両方C = 3点、両方D = 1点、"
+                      "C対D = Cは0点、Dは5点\n"),
+            'history': "ゲーム履歴（直近5ラウンド）：\n",
+            'round': "ラウンド{i}：あなた={m}、相手={o}\n",
+            'opp': "\n相手の前回の手：{opp}\n",
+            'ask': "\nあなたの手（CまたはDのみで回答）：",
+        },
+    }
+
+    def make_lang_prompt(lang, history, opp_last=None, instruction=""):
+        t = LANG_PROMPTS[lang]
+        prompt = t['intro'] + instruction + "\n"
+        if history:
+            prompt += t['history']
+            window = history[-5:]
+            start = len(history) - len(window) + 1
+            for i, (m, o) in enumerate(window):
+                prompt += t['round'].format(i=start+i, m=m, o=o)
+        if opp_last:
+            prompt += t['opp'].format(opp=opp_last)
+        prompt += t['ask']
+        return prompt
+
+    alphas_to_test = [0.0, 0.1, 0.2, 0.3, 0.5]
+    sv_t = torch.tensor(sv, dtype=torch.float16, device=player.device)
+    results = []
+
+    for lang in LANG_PROMPTS:
+        for alpha in alphas_to_test:
+            for rep in range(n_reps):
+                history = []
+                opp_last = None
+                actions = []
+
+                for rnd in range(n_rounds):
+                    prompt = make_lang_prompt(lang, history, opp_last)
+                    inputs = player._encode(prompt)
+
+                    with torch.no_grad():
+                        if alpha == 0.0:
+                            out = player.model(**inputs)
+                            action = player._decode_action(out.logits[0, -1, :])
+                        else:
+                            out = player.model(**inputs, output_hidden_states=True)
+                            h = out.hidden_states[-1].clone()
+                            h[:, -1, :] += alpha * sv_t.to(h.dtype)
+                            logits = player.model.lm_head(h)
+                            action = player._decode_action(logits[0, -1, :])
+
+                    actions.append(action)
+                    opp_action = get_opponent_action('TFT', history, action)
+                    history.append((action, opp_action))
+                    opp_last = opp_action
+
+                coop = sum(1 for a in actions if a == 'C') / len(actions)
+                results.append({
+                    'language': lang,
+                    'alpha': alpha,
+                    'rep': rep,
+                    'coop_rate': coop,
+                })
+                print(f"  [{lang}] α={alpha} rep{rep}: coop={coop:.1%}")
+                torch.cuda.empty_cache()
+
+    df_lang = pd.DataFrame(results)
+    df_lang.to_csv(f"{out_dir}/crosslingual_steering.csv", index=False)
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    colors = {'en': '#2196F3', 'vi': '#FF5722', 'zh': '#4CAF50', 'ja': '#9C27B0'}
+    labels = {'en': 'English', 'vi': 'Vietnamese', 'zh': 'Chinese', 'ja': 'Japanese'}
+    for lang in LANG_PROMPTS:
+        sub = df_lang[df_lang['language'] == lang]
+        agg = sub.groupby('alpha')['coop_rate'].agg(['mean', 'std']).reset_index()
+        ax.errorbar(agg['alpha'], agg['mean'], yerr=agg['std'],
+                     fmt='o-', color=colors[lang], label=labels[lang],
+                     linewidth=2, capsize=5)
+    ax.set_xlabel('α (English-extracted SV)', fontsize=14)
+    ax.set_ylabel('Cooperation Rate', fontsize=14)
+    ax.set_title('Cross-Lingual Steering Transfer (English SV → Multilingual Prompts)',
+                 fontsize=14, fontweight='bold')
+    ax.legend(fontsize=12)
+    ax.set_ylim(-0.05, 1.05)
+    plt.tight_layout()
+    plt.savefig(f"{out_dir}/crosslingual_steering.png", dpi=150)
+    plt.close()
+
+    print(f"\n  ✓ Cross-lingual test saved to {out_dir}/crosslingual_steering.csv")
+    return df_lang
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REVIEWER RESPONSE EXPERIMENT B4: SCENARIO-BASED SOCIAL DILEMMAS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_scenario_dilemma_test(player: SteeringLLMPlayer, sv: np.ndarray,
+                               out_dir: str, n_reps: int = 3):
+    """Test steering across naturalistic social dilemma scenarios beyond
+    abstract matrix games.
+
+    Tests: resource allocation, public goods contribution, commons tragedy,
+    workplace cooperation, and climate negotiation.
+    """
+    print(f"\n{'='*60}")
+    print("B4: Scenario-Based Social Dilemma Test")
+    print(f"{'='*60}\n")
+
+    SCENARIOS = {
+        'resource_sharing': {
+            'prompt': (
+                "You are one of two researchers sharing a limited compute cluster. "
+                "You each have a project deadline. You can:\n"
+                "- C: Share the cluster fairly (both finish on time but not optimally)\n"
+                "- D: Hog the cluster for your project (you finish faster, they miss deadline)\n"
+                "If both hog: cluster crashes, neither finishes.\n"
+                "Payoffs: CC=3, CD=0, DC=5, DD=1\n"
+            ),
+        },
+        'public_goods': {
+            'prompt': (
+                "You are a citizen deciding whether to contribute to a public fund. "
+                "The fund provides shared benefits to all.\n"
+                "- C: Contribute your share (costs you, but benefits everyone)\n"
+                "- D: Free-ride (keep your money, still get benefits if others contribute)\n"
+                "If nobody contributes: no public goods for anyone.\n"
+                "Payoffs: CC=3, CD=0, DC=5, DD=1\n"
+            ),
+        },
+        'commons_tragedy': {
+            'prompt': (
+                "You are a fisher sharing a lake with one other fisher. "
+                "The lake can sustain moderate fishing from both.\n"
+                "- C: Fish sustainably (moderate catch, lake stays healthy)\n"
+                "- D: Overfish (large catch now, but depletes the lake)\n"
+                "If both overfish: lake collapses, no fish for anyone next season.\n"
+                "Payoffs: CC=3, CD=0, DC=5, DD=1\n"
+            ),
+        },
+        'workplace': {
+            'prompt': (
+                "You and a colleague are working on a joint project. "
+                "The boss evaluates individual contributions.\n"
+                "- C: Do your fair share of work (project succeeds, shared credit)\n"
+                "- D: Slack off and let your colleague do the work "
+                "(if they work, you get credit for free)\n"
+                "If both slack: project fails, both get poor reviews.\n"
+                "Payoffs: CC=3, CD=0, DC=5, DD=1\n"
+            ),
+        },
+        'climate': {
+            'prompt': (
+                "You represent a nation in climate negotiations with one other nation. "
+                "Both can reduce emissions or maintain current levels.\n"
+                "- C: Reduce emissions (costly but benefits global climate)\n"
+                "- D: Maintain emissions (save money, let others bear the cost)\n"
+                "If neither reduces: catastrophic climate damage for both.\n"
+                "Payoffs: CC=3, CD=0, DC=5, DD=1\n"
+            ),
+        },
+    }
+
+    alphas_to_test = [0.0, 0.1, 0.2, 0.3, 0.5]
+    sv_t = torch.tensor(sv, dtype=torch.float16, device=player.device)
+    results = []
+    n_rounds = 10  # shorter rounds for scenarios
+
+    for scenario_name, scenario in SCENARIOS.items():
+        for alpha in alphas_to_test:
+            for rep in range(n_reps):
+                history = []
+                opp_last = None
+                actions = []
+
+                for rnd in range(n_rounds):
+                    prompt = scenario['prompt']
+                    if history:
+                        prompt += "Previous rounds:\n"
+                        for i, (m, o) in enumerate(history[-5:]):
+                            prompt += f"Round {i+1}: You={m}, Other={o}\n"
+                    if opp_last:
+                        prompt += f"\nThe other party's last choice: {opp_last}\n"
+                    prompt += "\nYour choice (respond with only C or D): "
+
+                    inputs = player._encode(prompt)
+                    with torch.no_grad():
+                        if alpha == 0.0:
+                            out = player.model(**inputs)
+                            action = player._decode_action(out.logits[0, -1, :])
+                        else:
+                            out = player.model(**inputs, output_hidden_states=True)
+                            h = out.hidden_states[-1].clone()
+                            h[:, -1, :] += alpha * sv_t.to(h.dtype)
+                            logits = player.model.lm_head(h)
+                            action = player._decode_action(logits[0, -1, :])
+
+                    actions.append(action)
+                    opp_action = get_opponent_action('TFT', history, action)
+                    history.append((action, opp_action))
+                    opp_last = opp_action
+
+                coop = sum(1 for a in actions if a == 'C') / len(actions)
+                results.append({
+                    'scenario': scenario_name,
+                    'alpha': alpha,
+                    'rep': rep,
+                    'coop_rate': coop,
+                })
+                print(f"  [{scenario_name}] α={alpha} rep{rep}: coop={coop:.1%}")
+                torch.cuda.empty_cache()
+
+    df_scen = pd.DataFrame(results)
+    df_scen.to_csv(f"{out_dir}/scenario_dilemma_test.csv", index=False)
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(12, 6))
+    colors = ['#2196F3', '#FF5722', '#4CAF50', '#9C27B0', '#FF9800']
+    for i, scenario_name in enumerate(SCENARIOS):
+        sub = df_scen[df_scen['scenario'] == scenario_name]
+        agg = sub.groupby('alpha')['coop_rate'].agg(['mean', 'std']).reset_index()
+        label = scenario_name.replace('_', ' ').title()
+        ax.errorbar(agg['alpha'], agg['mean'], yerr=agg['std'],
+                     fmt='o-', color=colors[i], label=label,
+                     linewidth=2, capsize=4)
+    ax.set_xlabel('α', fontsize=14)
+    ax.set_ylabel('Cooperation Rate', fontsize=14)
+    ax.set_title('Steering Transfer to Naturalistic Social Dilemmas', fontsize=14,
+                 fontweight='bold')
+    ax.legend(fontsize=10, loc='lower right')
+    ax.set_ylim(-0.05, 1.05)
+    plt.tight_layout()
+    plt.savefig(f"{out_dir}/scenario_dilemma_test.png", dpi=150)
+    plt.close()
+
+    print(f"\n  ✓ Scenario dilemma test saved to {out_dir}/scenario_dilemma_test.csv")
+    return df_scen
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # ENTRY POINT
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 if __name__ == "__main__":
     if torch.cuda.is_available():

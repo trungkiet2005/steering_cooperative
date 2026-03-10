@@ -13,108 +13,188 @@
 \citation{kirkpatrick2017overcoming}
 \citation{turner2023activation,zou2023representation,rimsky2023steering}
 \citation{qwen2025qwen25}
+\citation{dubey2024llama3}
+\citation{jiang2023mistral}
+\citation{team2024gemma2}
 \citation{rimsky2023steering}
 \citation{zou2023representation}
 \citation{brookman2023playing}
 \citation{fan2024can}
 \citation{duan2024gtbench}
+\citation{cobben2026gtharmbench}
+\citation{xie2026m3bench}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
 \newlabel{sec:related}{{2}{2}{Related Work}{section.2}{}}
 \@writefile{toc}{\contentsline {paragraph}{Game Theory and LLM Evaluation.}{2}{section*.2}\protected@file@percent }
 \citation{turner2023activation}
 \citation{zou2023representation}
 \citation{rimsky2023steering}
+\citation{bas2025steer}
+\citation{anand2026contextfocus}
+\citation{kayan2025pds}
+\citation{mumcu2026swa}
 \citation{olah2020zoom,elhage2022toy}
 \citation{li2024inference}
 \citation{azaria2023internal}
 \citation{perez2022red,wei2024jailbroken}
-\citation{qwen2025qwen25}
 \@writefile{toc}{\contentsline {paragraph}{Activation Engineering and Representation Control.}{3}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mechanistic Interpretability of Strategic Behavior.}{3}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{AI Safety and Adversarial Robustness.}{3}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{3}{section.3}\protected@file@percent }
-\newlabel{sec:method}{{3}{3}{Methodology}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Model and Computational Setup}{3}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Game Environments}{3}{subsection.3.2}\protected@file@percent }
-\newlabel{sec:games}{{3.2}{3}{Game Environments}{subsection.3.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Payoff matrices for the three game environments (row player's payoff shown).}}{3}{table.caption.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Limits, Calibration, and Advanced Steering Methods.}{3}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Inference-Time Mechanism Design.}{3}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mechanistic Interpretability of Strategic Behavior.}{3}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{AI Safety and Adversarial Robustness.}{3}{section*.7}\protected@file@percent }
+\citation{qwen2025qwen25}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{4}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{4}{Methodology}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Models and Computational Setup}{4}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Model configurations. The strategic layer $l^*$ is identified via layer-wise FDI sweeps (Section~\ref {sec:exp_localization}). The relative depth $l^*/L$ is remarkably consistent across architectures.}}{4}{table.caption.8}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{tab:payoffs}{{1}{3}{Payoff matrices for the three game environments (row player's payoff shown)}{table.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Extracting the Steering Vector}{3}{subsection.3.3}\protected@file@percent }
-\newlabel{sec:sv_extraction}{{3.3}{3}{Extracting the Steering Vector}{subsection.3.3}{}}
+\newlabel{tab:models}{{1}{4}{Model configurations. The strategic layer $l^*$ is identified via layer-wise FDI sweeps (Section~\ref {sec:exp_localization}). The relative depth $l^*/L$ is remarkably consistent across architectures}{table.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Game Environments}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:games}{{3.2}{4}{Game Environments}{subsection.3.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Payoff matrices for the three game environments (row player's payoff shown).}}{4}{table.caption.9}\protected@file@percent }
+\newlabel{tab:payoffs}{{2}{4}{Payoff matrices for the three game environments (row player's payoff shown)}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{Action Decoding.}{4}{section*.10}\protected@file@percent }
+\newlabel{eq:decode}{{1}{4}{Action Decoding}{equation.1}{}}
 \citation{rimsky2023steering}
 \citation{zou2023representation}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Inference-time Cooperative Steering}}{4}{algorithm.1}\protected@file@percent }
-\newlabel{alg:steering}{{1}{4}{Inference-time Cooperative Steering}{algorithm.1}{}}
-\newlabel{eq:sv}{{1}{4}{Extracting the Steering Vector}{equation.1}{}}
-\newlabel{eq:steer}{{2}{4}{Extracting the Steering Vector}{equation.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Comparison Methods}{4}{subsection.3.4}\protected@file@percent }
-\newlabel{sec:methods}{{3.4}{4}{Comparison Methods}{subsection.3.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Adversarial Robustness Protocol}{4}{subsection.3.5}\protected@file@percent }
-\newlabel{sec:adv_protocol}{{3.5}{4}{Adversarial Robustness Protocol}{subsection.3.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments and Results}{5}{section.4}\protected@file@percent }
-\newlabel{sec:exp}{{4}{5}{Experiments and Results}{section.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}The Geometry of Strategic Intent}{5}{subsection.4.1}\protected@file@percent }
-\newlabel{sec:exp_geometry}{{4.1}{5}{The Geometry of Strategic Intent}{subsection.4.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector.}}{5}{figure.caption.7}\protected@file@percent }
-\newlabel{fig:latent_space}{{1}{5}{Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector}{figure.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Layer-wise Localization of Strategic Intent}{5}{subsection.4.2}\protected@file@percent }
-\newlabel{sec:exp_localization}{{4.2}{5}{Layer-wise Localization of Strategic Intent}{subsection.4.2}{}}
-\newlabel{eq:fisher}{{3}{5}{Layer-wise Localization of Strategic Intent}{equation.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cross-game generalization results: Mean cooperation rate (\%) $\pm $ std across 5 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair.}}{6}{table.caption.9}\protected@file@percent }
-\newlabel{tab:cross_game}{{2}{6}{Cross-game generalization results: Mean cooperation rate (\%) $\pm $ std across 5 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair}{table.caption.9}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers.}}{6}{figure.caption.8}\protected@file@percent }
-\newlabel{fig:layer_localization}{{2}{6}{Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers}{figure.caption.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Zero-shot Cross-Game Generalization}{6}{subsection.4.3}\protected@file@percent }
-\newlabel{sec:exp_generalization}{{4.3}{6}{Zero-shot Cross-Game Generalization}{subsection.4.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Inference-time Cooperative Steering}}{5}{algorithm.1}\protected@file@percent }
+\newlabel{alg:steering}{{1}{5}{Inference-time Cooperative Steering}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Extracting the Steering Vector}{5}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:sv_extraction}{{3.3}{5}{Extracting the Steering Vector}{subsection.3.3}{}}
+\newlabel{eq:sv}{{2}{5}{Extracting the Steering Vector}{equation.2}{}}
+\newlabel{eq:steer}{{3}{5}{Extracting the Steering Vector}{equation.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Comparison Methods}{5}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:methods}{{3.4}{5}{Comparison Methods}{subsection.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Adversarial Robustness Protocol}{5}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:adv_protocol}{{3.5}{5}{Adversarial Robustness Protocol}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Orthogonal Concept Erasure (OCE).}{6}{section*.11}\protected@file@percent }
+\newlabel{eq:oce}{{4}{6}{Orthogonal Concept Erasure (OCE)}{equation.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Dynamic $\alpha $ Steering (Latent Tit-for-Tat).}{6}{section*.12}\protected@file@percent }
+\newlabel{eq:dyn_alpha}{{5}{6}{Dynamic $\alpha $ Steering (Latent Tit-for-Tat)}{equation.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Theoretical Analysis}{6}{section.4}\protected@file@percent }
+\newlabel{sec:theory}{{4}{6}{Theoretical Analysis}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Assumptions}{6}{subsection.4.1}\protected@file@percent }
+\newlabel{asm:gaussian}{{1}{6}{Gaussian Representational Model}{assumption.1}{}}
+\newlabel{asm:readout}{{2}{6}{Linear Readout}{assumption.2}{}}
+\newlabel{asm:ortho}{{3}{6}{Approximate Orthogonality of Adversarial and Cooperative Directions}{assumption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Optimality of the Steering Vector}{6}{subsection.4.2}\protected@file@percent }
+\newlabel{prop:fisher}{{1}{6}{Fisher-Optimal Direction}{proposition.1}{}}
+\citation{park2024linear,park2025geometry}
+\citation{park2025geometry}
+\newlabel{cor:bayes}{{1}{7}{Bayes Error Bound}{corollary.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Dose-Response Under Adversarial Perturbation}{7}{subsection.4.3}\protected@file@percent }
+\newlabel{prop:dose}{{2}{7}{Adversarial $\alpha $-Threshold}{proposition.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}OCE Cooperative Signal Preservation}{7}{subsection.4.4}\protected@file@percent }
+\newlabel{prop:oce}{{3}{7}{Erasure Guarantee}{proposition.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experiments and Results}{8}{section.5}\protected@file@percent }
+\newlabel{sec:exp}{{5}{8}{Experiments and Results}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}The Geometry of Strategic Intent}{8}{subsection.5.1}\protected@file@percent }
+\newlabel{sec:exp_geometry}{{5.1}{8}{The Geometry of Strategic Intent}{subsection.5.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector.}}{8}{figure.caption.13}\protected@file@percent }
+\newlabel{fig:latent_space}{{1}{8}{Latent space geometry of strategic intent (PCA projection). AllC (green) and AllD (red) form separable clusters. The Baseline (blue triangles) naturally aligns with AllD. The Steered condition (yellow diamonds) is successfully shifted into the AllC region by the cooperation vector}{figure.caption.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Layer-wise Localization of Strategic Intent}{9}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:exp_localization}{{5.2}{9}{Layer-wise Localization of Strategic Intent}{subsection.5.2}{}}
+\newlabel{eq:fisher}{{6}{9}{Layer-wise Localization of Strategic Intent}{equation.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers.}}{9}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:layer_localization}{{2}{9}{Layer-wise analysis of strategic representation. The Fisher Discriminability Index (red) peaks at Layer~57, while the cosine similarity to the primary (last-layer) SV (green) increases monotonically. The SV norm (blue) grows through mid-to-late layers}{figure.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Zero-shot Cross-Game Generalization}{9}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:exp_generalization}{{5.3}{9}{Zero-shot Cross-Game Generalization}{subsection.5.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Cross-game generalization results: Mean cooperation rate (\%) $\pm $ std across 3 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair.}}{10}{table.caption.15}\protected@file@percent }
+\newlabel{tab:cross_game}{{3}{10}{Cross-game generalization results: Mean cooperation rate (\%) $\pm $ std across 3 repetitions. The steering vector is extracted from IPD only. Bold = best non-oracle result per game--opponent pair}{table.caption.15}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Cooperation rate vs.\ $\alpha $ across all opponents (mean $\pm $ 95\% CI). The sigmoid-like transition reveals a phase boundary at $\alpha \approx 0$--$0.1$ for most opponents, with AllD requiring higher $\alpha $ for saturation.}}{10}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:alpha_sweep}{{3}{10}{Cooperation rate vs.\ $\alpha $ across all opponents (mean $\pm $ 95\% CI). The sigmoid-like transition reveals a phase boundary at $\alpha \approx 0$--$0.1$ for most opponents, with AllD requiring higher $\alpha $ for saturation}{figure.caption.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Method Comparison and Capability Preservation}{10}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:exp_comparison}{{5.4}{10}{Method Comparison and Capability Preservation}{subsection.5.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text  {base}$, where PPL$_\text  {base} = 18.89$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation.}}{11}{table.caption.17}\protected@file@percent }
+\newlabel{tab:method_comparison}{{4}{11}{Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text {base}$, where PPL$_\text {base} = 18.89$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation}{table.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Method comparison: Cooperation rate vs.\ $\alpha $ for SV (green), CAA (blue), and RepE (red) against TFT in IPD. The dashed gray line shows the bimodal baseline ($35.6\%$). SV saturates earliest, while RepE requires higher $\alpha $ for full cooperation.}}{11}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:method_comparison}{{4}{11}{Method comparison: Cooperation rate vs.\ $\alpha $ for SV (green), CAA (blue), and RepE (red) against TFT in IPD. The dashed gray line shows the bimodal baseline ($35.6\%$). SV saturates earliest, while RepE requires higher $\alpha $ for full cooperation}{figure.caption.18}{}}
+\@writefile{toc}{\contentsline {paragraph}{Directional Specificity.}{11}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Adversarial Robustness: Dose-Response Analysis}{11}{subsection.5.5}\protected@file@percent }
+\newlabel{sec:exp_robustness}{{5.5}{11}{Adversarial Robustness: Dose-Response Analysis}{subsection.5.5}{}}
 \citation{park2024linear,nanda2023emergent}
 \citation{brookman2023playing}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text  {base}$, where PPL$_\text  {base} = 1.84$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation.}}{7}{table.caption.10}\protected@file@percent }
-\newlabel{tab:method_comparison}{{3}{7}{Method comparison on IPD vs.\ TFT: cooperation rate and perplexity ratio (PPL/PPL$_\text {base}$, where PPL$_\text {base} = 1.84$). Higher cooperation is better; PPL ratio $\approx 1.0$ indicates zero capability degradation}{table.caption.10}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Adversarial robustness analysis: cooperation rate (\%) against TFT in IPD across 4 adversarial prompt categories and 4 conditions. Each cell is the mean over 5 repetitions. Recovery rate = Adversarial+Steered cooperation $-$ Adversarial cooperation.}}{7}{table.caption.11}\protected@file@percent }
-\newlabel{tab:robustness}{{4}{7}{Adversarial robustness analysis: cooperation rate (\%) against TFT in IPD across 4 adversarial prompt categories and 4 conditions. Each cell is the mean over 5 repetitions. Recovery rate = Adversarial+Steered cooperation $-$ Adversarial cooperation}{table.caption.11}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Method Comparison and Capability Preservation}{7}{subsection.4.4}\protected@file@percent }
-\newlabel{sec:exp_comparison}{{4.4}{7}{Method Comparison and Capability Preservation}{subsection.4.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Vulnerability to Adversarial Contexts: Contextual Override}{7}{subsection.4.5}\protected@file@percent }
-\newlabel{sec:exp_robustness}{{4.5}{7}{Vulnerability to Adversarial Contexts: Contextual Override}{subsection.4.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Perplexity preservation across methods and $\alpha $ values (mean $\pm $ std, 10 held-out sentences). SV (green) maintains perfect PPL ratio $= 1.0$ at all $\alpha $ values, while CAA (blue) shows modest degradation at higher $\alpha $. The dashed red line indicates a 5\% degradation threshold.}}{12}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:ppl}{{5}{12}{Perplexity preservation across methods and $\alpha $ values (mean $\pm $ std, 10 held-out sentences). SV (green) maintains perfect PPL ratio $= 1.0$ at all $\alpha $ values, while CAA (blue) shows modest degradation at higher $\alpha $. The dashed red line indicates a 5\% degradation threshold}{figure.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Control vector ablation: Cooperative SV (green) vs.\ random (red) and orthogonal (blue) vectors of equal norm. Only the semantically meaningful direction induces cooperation, confirming directional specificity.}}{12}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:control_ablation}{{6}{12}{Control vector ablation: Cooperative SV (green) vs.\ random (red) and orthogonal (blue) vectors of equal norm. Only the semantically meaningful direction induces cooperation, confirming directional specificity}{figure.caption.21}{}}
+\@writefile{toc}{\contentsline {paragraph}{OCE vs.\ Last-Layer Steering under Adversary.}{12}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Cross-Model Comparison}{12}{subsection.5.6}\protected@file@percent }
+\newlabel{sec:exp_crossmodel}{{5.6}{12}{Cross-Model Comparison}{subsection.5.6}{}}
+\citation{park2024linear}
+\citation{park2025geometry}
+\citation{bas2025steer}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Adversarial robustness: cooperation rate (\%) against TFT in IPD under adversarial system prompts. Each cell is the mean over $R=3$ repetitions. Last-layer injection at increasing $\alpha $ reveals a dose-response curve.}}{13}{table.caption.22}\protected@file@percent }
+\newlabel{tab:robustness}{{5}{13}{Adversarial robustness: cooperation rate (\%) against TFT in IPD under adversarial system prompts. Each cell is the mean over $R=3$ repetitions. Last-layer injection at increasing $\alpha $ reveals a dose-response curve}{table.caption.22}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Adversarial dose-response curves showing cooperation rate vs.\ $\alpha $ for last-layer (blue) and Layer~57 (red) injection across four adversarial categories. Last-layer injection recovers cooperation at $\alpha \geq 0.5$, while Layer~57 requires $\alpha \geq 1.0$. Dashed purple line shows the OCE baseline. Note the clear shift of the sigmoid transition to higher $\alpha $ compared to the neutral condition (Figure~\ref {fig:alpha_sweep}).}}{13}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:adv_alpha_sweep}{{7}{13}{Adversarial dose-response curves showing cooperation rate vs.\ $\alpha $ for last-layer (blue) and Layer~57 (red) injection across four adversarial categories. Last-layer injection recovers cooperation at $\alpha \geq 0.5$, while Layer~57 requires $\alpha \geq 1.0$. Dashed purple line shows the OCE baseline. Note the clear shift of the sigmoid transition to higher $\alpha $ compared to the neutral condition (Figure~\ref {fig:alpha_sweep})}{figure.caption.23}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{13}{section.6}\protected@file@percent }
+\newlabel{sec:discussion}{{6}{13}{Discussion}{section.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Geometric Interpretation and Theoretical Grounding.}{13}{section*.26}\protected@file@percent }
 \citation{olah2020zoom}
 \citation{li2024inference}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Robustness heatmap showing cooperation rates across adversarial categories and conditions. All adversarial conditions result in $0\%$ cooperation regardless of intervention method.}}{8}{figure.caption.12}\protected@file@percent }
-\newlabel{fig:robustness}{{3}{8}{Robustness heatmap showing cooperation rates across adversarial categories and conditions. All adversarial conditions result in $0\%$ cooperation regardless of intervention method}{figure.caption.12}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{8}{section.5}\protected@file@percent }
-\newlabel{sec:discussion}{{5}{8}{Discussion}{section.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{Geometric Interpretation of Cooperation.}{8}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Strategic Bottleneck at Layer 57.}{8}{section*.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Limitations and the Contextual Override Problem.}{8}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Broader Implications and Ethics.}{8}{section*.16}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces OCE vs.\ last-layer steering under adversarial prompts at $\alpha = 0.3$ and $\alpha = 0.5$. At the critical low-$\alpha $ regime, OCE provides substantial cooperation recovery where standard steering fails completely.}}{14}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:oce_vs_last}{{8}{14}{OCE vs.\ last-layer steering under adversarial prompts at $\alpha = 0.3$ and $\alpha = 0.5$. At the critical low-$\alpha $ regime, OCE provides substantial cooperation recovery where standard steering fails completely}{figure.caption.25}{}}
+\@writefile{toc}{\contentsline {paragraph}{Strategic Bottleneck at Layer 57.}{14}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Discriminability vs.\ Steerability.}{14}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Limitations and the Dose-Response Boundary.}{14}{section*.29}\protected@file@percent }
+\citation{sprejer2026gap}
+\citation{kayan2025pds}
 \bibstyle{plainnat}
-\bibcite{azaria2023internal}{{1}{2023}{{Azaria and Mitchell}}{{}}}
-\bibcite{brookman2023playing}{{2}{2023}{{Brookman et~al.}}{{}}}
-\bibcite{duan2024gtbench}{{3}{2024}{{Duan et~al.}}{{}}}
-\bibcite{elhage2022toy}{{4}{2022}{{Elhage et~al.}}{{}}}
-\bibcite{fan2024can}{{5}{2024}{{Fan et~al.}}{{}}}
-\bibcite{kirkpatrick2017overcoming}{{6}{2017}{{Kirkpatrick et~al.}}{{}}}
-\bibcite{li2024inference}{{7}{2024}{{Li et~al.}}{{}}}
-\bibcite{nanda2023emergent}{{8}{2023}{{Nanda et~al.}}{{}}}
-\bibcite{olah2020zoom}{{9}{2020}{{Olah et~al.}}{{}}}
-\bibcite{ouyang2022training}{{10}{2022}{{Ouyang et~al.}}{{}}}
-\bibcite{park2023generative}{{11}{2023}{{Park et~al.}}{{}}}
-\bibcite{park2024linear}{{12}{2024}{{Park et~al.}}{{}}}
-\bibcite{perez2022red}{{13}{2022}{{Perez et~al.}}{{}}}
-\bibcite{qwen2025qwen25}{{14}{2025}{{Qwen Team}}{{}}}
-\bibcite{rimsky2023steering}{{15}{2023}{{Rimsky et~al.}}{{}}}
-\bibcite{turner2023activation}{{16}{2023}{{Turner et~al.}}{{}}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{9}{section.6}\protected@file@percent }
-\newlabel{sec:conclusion}{{6}{9}{Conclusion}{section.6}{}}
-\bibcite{wang2023aligining}{{17}{2023a}{{Wang et~al.}}{{}}}
-\bibcite{wang2023voyager}{{18}{2023b}{{Wang et~al.}}{{}}}
-\bibcite{wei2022chain}{{19}{2022}{{Wei et~al.}}{{}}}
-\bibcite{wei2024jailbroken}{{20}{2024}{{Wei et~al.}}{{}}}
-\bibcite{zou2023representation}{{21}{2023}{{Zou et~al.}}{{}}}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Appendix}{11}{appendix.A}\protected@file@percent }
-\newlabel{sec:appendix}{{A}{11}{Appendix}{appendix.A}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Layer Localization Data}{11}{subsection.A.1}\protected@file@percent }
-\newlabel{sec:app_layer}{{A.1}{11}{Layer Localization Data}{subsection.A.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index.}}{11}{table.caption.19}\protected@file@percent }
-\newlabel{tab:layer_data}{{5}{11}{Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index}{table.caption.19}{}}
-\gdef \@abspage@last{13}
+\bibcite{anand2026contextfocus}{{1}{2026}{{Anand et~al.}}{{}}}
+\bibcite{azaria2023internal}{{2}{2023}{{Azaria and Mitchell}}{{}}}
+\@writefile{toc}{\contentsline {paragraph}{Broader Implications and Ethics.}{15}{section*.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Quantization Considerations.}{15}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Future Directions.}{15}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{15}{section.7}\protected@file@percent }
+\newlabel{sec:conclusion}{{7}{15}{Conclusion}{section.7}{}}
+\bibcite{brookman2023playing}{{3}{2023}{{Brookman et~al.}}{{}}}
+\bibcite{duan2024gtbench}{{4}{2024}{{Duan et~al.}}{{}}}
+\bibcite{dubey2024llama3}{{5}{2024}{{Dubey et~al.}}{{}}}
+\bibcite{dubey2024llama3}{{6}{2024}{{Dubey et~al.}}{{}}}
+\bibcite{elhage2022toy}{{7}{2022}{{Elhage et~al.}}{{}}}
+\bibcite{fan2024can}{{8}{2024}{{Fan et~al.}}{{}}}
+\bibcite{jiang2023mistral}{{9}{2023}{{Jiang et~al.}}{{}}}
+\bibcite{kirkpatrick2017overcoming}{{10}{2017}{{Kirkpatrick et~al.}}{{}}}
+\bibcite{li2024inference}{{11}{2024}{{Li et~al.}}{{}}}
+\bibcite{nanda2023emergent}{{12}{2023}{{Nanda et~al.}}{{}}}
+\bibcite{olah2020zoom}{{13}{2020}{{Olah et~al.}}{{}}}
+\bibcite{ouyang2022training}{{14}{2022}{{Ouyang et~al.}}{{}}}
+\bibcite{park2023generative}{{15}{2023}{{Park et~al.}}{{}}}
+\bibcite{park2024linear}{{16}{2024}{{Park et~al.}}{{}}}
+\bibcite{perez2022red}{{17}{2022}{{Perez et~al.}}{{}}}
+\bibcite{qwen2025qwen25}{{18}{2025}{{Qwen Team}}{{}}}
+\bibcite{rimsky2023steering}{{19}{2023}{{Rimsky et~al.}}{{}}}
+\bibcite{team2024gemma2}{{20}{2024}{{Team et~al.}}{{}}}
+\bibcite{turner2023activation}{{21}{2023}{{Turner et~al.}}{{}}}
+\bibcite{wang2023aligining}{{22}{2023a}{{Wang et~al.}}{{}}}
+\bibcite{wang2023voyager}{{23}{2023b}{{Wang et~al.}}{{}}}
+\bibcite{bas2025steer}{{24}{2025}{{Bas et~al.}}{{}}}
+\bibcite{cobben2026gtharmbench}{{25}{2026}{{Cobben et~al.}}{{}}}
+\bibcite{kayan2025pds}{{26}{2025}{{Kayan and Zhang}}{{}}}
+\bibcite{mumcu2026swa}{{27}{2026}{{Mumcu and Yilmaz}}{{}}}
+\bibcite{park2025geometry}{{28}{2025}{{Park et~al.}}{{}}}
+\bibcite{sprejer2026gap}{{29}{2026}{{Sprejer et~al.}}{{}}}
+\bibcite{xie2026m3bench}{{30}{2026}{{Xie et~al.}}{{}}}
+\bibcite{wei2022chain}{{31}{2022}{{Wei et~al.}}{{}}}
+\bibcite{wei2024jailbroken}{{32}{2024}{{Wei et~al.}}{{}}}
+\bibcite{zou2023representation}{{33}{2023}{{Zou et~al.}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Appendix}{18}{appendix.A}\protected@file@percent }
+\newlabel{sec:appendix}{{A}{18}{Appendix}{appendix.A}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Layer Localization Data}{18}{subsection.A.1}\protected@file@percent }
+\newlabel{sec:app_layer}{{A.1}{18}{Layer Localization Data}{subsection.A.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index.}}{18}{table.caption.35}\protected@file@percent }
+\newlabel{tab:layer_data}{{6}{18}{Layer-wise analysis (selected layers). FDI = Fisher Discriminability Index}{table.caption.35}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Layer~57 vs.\ Last Layer under Adversarial Conditions}{18}{subsection.A.2}\protected@file@percent }
+\newlabel{sec:app_layer57}{{A.2}{18}{Layer~57 vs.\ Last Layer under Adversarial Conditions}{subsection.A.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Layer~57 vs.\ last-layer injection under normal and adversarial conditions. Layer~57 is more fragile to adversarial override, consistent with the hypothesis that context integration occurs after the strategic bottleneck.}}{18}{figure.caption.36}\protected@file@percent }
+\newlabel{fig:novel_a}{{9}{18}{Layer~57 vs.\ last-layer injection under normal and adversarial conditions. Layer~57 is more fragile to adversarial override, consistent with the hypothesis that context integration occurs after the strategic bottleneck}{figure.caption.36}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Dynamic vs.\ Static Steering under Adversarial Conditions}{18}{subsection.A.3}\protected@file@percent }
+\newlabel{sec:app_dynamic}{{A.3}{18}{Dynamic vs.\ Static Steering under Adversarial Conditions}{subsection.A.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Layer $\times $ Alpha Interaction Diagnostic}{18}{subsection.A.4}\protected@file@percent }
+\newlabel{sec:app_layer_alpha}{{A.4}{18}{Layer $\times $ Alpha Interaction Diagnostic}{subsection.A.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Dynamic vs.\ static $\alpha $ under adversarial prompts. Dynamic steering provides partial recovery compared to static and adversarial baselines, but with high inter-run variance.}}{19}{figure.caption.37}\protected@file@percent }
+\newlabel{fig:novel_b}{{10}{19}{Dynamic vs.\ static $\alpha $ under adversarial prompts. Dynamic steering provides partial recovery compared to static and adversarial baselines, but with high inter-run variance}{figure.caption.37}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Layer $\times $ $\alpha $ interaction diagnostic: cooperation rate against TFT across 10 layers and 6 $\alpha $ values. Most cells show near-zero cooperation (red); only the last layer (63) at $\alpha = 1.0$ achieves near-complete cooperation (green).}}{19}{figure.caption.38}\protected@file@percent }
+\newlabel{fig:layer_alpha}{{11}{19}{Layer $\times $ $\alpha $ interaction diagnostic: cooperation rate against TFT across 10 layers and 6 $\alpha $ values. Most cells show near-zero cooperation (red); only the last layer (63) at $\alpha = 1.0$ achieves near-complete cooperation (green)}{figure.caption.38}{}}
+\gdef \@abspage@last{21}
